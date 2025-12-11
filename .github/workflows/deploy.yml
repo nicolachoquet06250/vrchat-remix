@@ -41,6 +41,7 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir -p artifact
+          mkdir -p artifact/.output
           # Nitro output (SSR node-server)
           cp -r .output/* artifact/.output
           # Package files for prod install on server (for migrations or any runtime deps)
