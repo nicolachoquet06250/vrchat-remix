@@ -47,8 +47,6 @@ jobs:
           # Package files for prod install on server (for migrations or any runtime deps)
           cp package.json artifact/package.json
           if [ -f package-lock.json ]; then cp package-lock.json artifact/package-lock.json; fi
-          # Include .env if provided (for runtime on server)
-          if [ -f .env ]; then cp .env artifact/.env; fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -67,6 +65,17 @@ jobs:
         with:
           name: build
           path: build
+
+      - name: Create .env from secret (optional)
+        run: |
+          echo "Creating .env from secret"
+          echo "DB_HOST=${{secrets.DB_HOST}}" >> build/.env
+          echo "DB_PORT=${{secrets.DB_PORT}}" >> build/.env
+          echo "DB_USER=${{secrets.DB_USER}}" >> build/.env
+          echo "DB_PASSWORD=${{secrets.DB_PASSWORD}}" >> build/.env
+          echo "DB_NAME=${{secrets.DB_NAME}}" >> build/.env
+          echo "DB_CREDENTIALS_URL=mysql://${{secrets.DB_USER}}:${{secrets.DB_PASSWORD}}@${{secrets.DB_HOST}}:${{secrets.DB_PORT}}/${{secrets.DB_NAME}}" >> build/.env
+          echo "JWT_SECRET=${{secrets.JWT_SECRET}}" >> build/.env
 
       - name: Debug artifact contents
         run: |
@@ -91,7 +100,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          password: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
