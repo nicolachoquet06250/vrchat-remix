@@ -1,0 +1,135 @@
+name: Build and Deploy to AlwaysData
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  NODE_VERSION: '23'
+
+jobs:
+  build:
+    name: Build (Nuxt/Nitro)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create .env from secret (optional)
+        run: |
+          echo "Creating .env from secret"
+          echo "DB_HOST=${{secret.DB_HOST}}" >> .env
+          echo "DB_PORT=${{secret.DB_PORT}}" >> .env
+          echo "DB_USER=${{secret.DB_USER}}" >> .env
+          echo "DB_PASSWORD=${{secret.DB_PASSWORD}}" >> .env
+          echo "DB_NAME=vrchat_remix" >> .env
+          echo "DB_CREDENTIALS_URL=mysql://${{secret.DB_USER}}:${{secret.DB_PASSWORD}}@${{secret.DB_HOST}}:${{secret.DB_PORT}}/vrchat_remix" >> .env
+          echo "JWT_SECRET=${{secret.JWT_SECRET}}" >> .env
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Build
+        run: npm run build
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifact
+          # Nitro output (SSR node-server)
+          cp -r .output artifact/.output
+          # Package files for prod install on server (for migrations or any runtime deps)
+          cp package.json artifact/package.json
+          if [ -f package-lock.json ]; then cp package-lock.json artifact/package-lock.json; fi
+          # Include .env if provided (for runtime on server)
+          if [ -f .env ]; then cp .env artifact/.env; fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: artifact
+
+  deploy:
+    name: Deploy to AlwaysData (SSH)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build
+
+      - name: Copy files to server (SCP)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: |
+            build/.output/**
+            build/package.json
+            build/package-lock.json
+            build/.env
+          target: ${{ secrets.REMOTE_PATH }}
+          strip_components: 1
+
+      - name: Post-deploy remote commands (install + migrate)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd ${{ secrets.REMOTE_PATH }}
+            if command -v node >/dev/null 2>&1; then
+              echo "Node version on server: $(node -v)"
+            else
+              echo "Warning: Node is not in PATH on the server. Ensure AlwaysData Node.js environment is enabled." >&2
+            fi
+            # Install dependencies (include dev to allow running drizzle-kit migrations)
+            if [ -f package.json ]; then
+              npm ci
+            fi
+            # Run database migrations (Drizzle)
+            if npm run | grep -q "db:migrate"; then
+              npm run db:migrate
+            else
+              echo "No npm script db:migrate found. Skipping migrations."
+            fi
+            echo "Deployed to ${{ secrets.REMOTE_PATH }}"
+
+      # Optional: restart your app (uncomment and adapt one of the options below)
+      # - name: Restart app with PM2 (optional)
+      #   uses: appleboy/ssh-action@v1.2.0
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     port: ${{ secrets.SSH_PORT || 22 }}
+      #     script: |
+      #       cd ${{ secrets.REMOTE_PATH }}
+      #       pm2 startOrReload ecosystem.config.cjs --update-env
+      #       pm2 save
+
+      # - name: Restart AlwaysData app (custom command)
+      #   if: ${{ secrets.RESTART_CMD != '' }}
+      #   uses: appleboy/ssh-action@v1.2.0
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     port: ${{ secrets.SSH_PORT || 22 }}
+      #     script: |
+      #       cd ${{ secrets.REMOTE_PATH }}
+      #       ${{ secrets.RESTART_CMD }}
