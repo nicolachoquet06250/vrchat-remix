@@ -81,8 +81,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           # Copy the built artifact folder contents
-          source: |
-            build/artifact/**
+          source: build
           target: ${{ secrets.REMOTE_PATH }}
           # Strip both the leading 'build' and 'artifact' directories
           strip_components: 2
