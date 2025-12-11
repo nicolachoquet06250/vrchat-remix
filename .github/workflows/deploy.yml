@@ -102,6 +102,7 @@ jobs:
           target: ${{ secrets.REMOTE_PATH }}
           # Strip both the leading 'build' and 'artifact' directories
           strip_components: 1
+          rm: true
 
       - name: Post-deploy remote commands (install + migrate)
         uses: appleboy/ssh-action@v1.2.0
@@ -124,6 +125,15 @@ jobs:
             fi
             echo "Deployed to ${{ secrets.REMOTE_PATH }}"
 
+
+      - name: restart application
+        run: |
+          err=$(curl -X POST --basic --user "${{secrets.ALWAYSDATA_TOKEN}} account=${{secrets.ALWAYSDATA_USER}}:" https://api.alwaysdata.com/v1/site/${{secrets.ALWAYSDATA_SITE_ID}}/restart/ &>2);
+          if [ "${err}" -eq "" ]; then 
+            echo "Redémarrage OK"
+          else
+            echo "Erreur : ${err}"
+          fi
       # Optional: restart your app (uncomment and adapt one of the options below)
       # - name: Restart app with PM2 (optional)
       #   uses: appleboy/ssh-action@v1.2.0
