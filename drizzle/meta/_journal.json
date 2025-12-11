@@ -15,6 +15,13 @@
       "when": 1765462560397,
       "tag": "0001_bitter_epoch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1765477135319,
+      "tag": "0002_hot_pretty_boy",
+      "breakpoints": true
     }
   ]
 }

@@ -42,7 +42,22 @@ const isOwner = computed(() => {
         <div class="spacer" />
         <NuxtLink v-if="isOwner" :to="{path: `/projects/${id}/edit`}" class="btn">Modifier</NuxtLink>
       </div>
-      <div class="meta">par #{{ data!.userId }} • {{ new Date(data!.createdAt).toLocaleString() }}</div>
+      <div class="meta">
+        <span class="creator">
+          <template v-if="data!.creatorHasAvatar && data!.creatorAvatarUrl">
+            <img
+              class="avatar"
+              :src="data!.creatorAvatarUrl"
+              :alt="`Avatar de ${data!.creatorUsername || 'utilisateur'}`"
+            />
+          </template>
+          <template v-else>
+            <span class="avatar placeholder">{{ (data!.creatorUsername || ('#'+data!.userId)).charAt(0).toUpperCase() }}</span>
+          </template>
+          <span class="username">{{ data!.creatorUsername || ('#'+data!.userId) }}</span>
+        </span>
+        • {{ new Date(data!.createdAt).toLocaleString() }}
+      </div>
       <p class="desc">{{ data!.description }}</p>
       <template v-if="hasImages">
         <div class="carousel">
@@ -90,7 +105,11 @@ const isOwner = computed(() => {
 .header { display: flex; align-items: center; gap: 8px; }
 .spacer { flex: 1; }
 .title { margin: 0; }
-.meta { color: #666; font-size: 12px; }
+.meta { color: #666; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.creator { display: inline-flex; align-items: center; gap: 6px; }
+.avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: inline-block; }
+.avatar.placeholder { background: #f0f0f0; color: #666; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.username { font-weight: 500; }
 .desc { white-space: pre-wrap; }
 .carousel { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
 .viewport { position: relative; width: 100%; height: 360px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fafafa; display: flex; align-items: center; justify-content: center; }

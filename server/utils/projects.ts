@@ -1,6 +1,6 @@
 import { eq, inArray } from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
-import {type Project, projectTags, tags} from '~~/server/db/schema'
+import {type Project, projectTags, tags, users, userAvatars} from '~~/server/db/schema'
 import { requireAuth } from '~~/server/utils/auth'
 
 export async function ensureProjectOwner(event: any, projectId: number) {
@@ -16,7 +16,15 @@ export async function ensureProjectOwner(event: any, projectId: number) {
   return {session, proj: query}
 }
 
-export async function getProjectWithTags(projectId: number): Promise<Project & {tags: string[], hasFile: boolean} | null> {
+export async function getProjectWithTags(projectId: number): Promise<
+  Project & {
+    tags: string[]
+    hasFile: boolean
+    creatorUsername?: string
+    creatorHasAvatar?: boolean
+    creatorAvatarUrl?: string | null
+  } | null
+> {
   const db = getDb()
   const proj = await db.query.projects.findFirst({ where: (p, { eq }) => eq(p.id, projectId) })
   if (!proj) return null
@@ -28,7 +36,35 @@ export async function getProjectWithTags(projectId: number): Promise<Project & {
   const tagList = pts.map((r) => r.tags?.name).filter(Boolean) as string[]
   // Ne pas renvoyer le blob; exposer un indicateur et les métadonnées seulement
   const { fileData, ...rest } = proj as any
-  return { ...rest, hasFile: Boolean(proj.fileName && proj.fileSize), tags: tagList } as Project & {tags: string[], hasFile: boolean}
+  // Fetch creator information
+  let creatorUsername: string | undefined = undefined
+  let creatorHasAvatar = false
+  let creatorAvatarUrl: string | null = null
+  const creatorId = proj.userId
+  const userRow = await db.select({ id: users.id, username: users.username }).from(users).where(eq(users.id, creatorId)).limit(1)
+  if (userRow.length) {
+    creatorUsername = userRow[0].username
+  }
+  const avatarRow = await db.select({ userId: userAvatars.userId }).from(userAvatars).where(eq(userAvatars.userId, creatorId)).limit(1)
+  if (avatarRow.length) {
+    creatorHasAvatar = true
+    creatorAvatarUrl = `/api/users/${creatorId}/avatar`
+  }
+
+  return {
+    ...rest,
+    hasFile: Boolean(proj.fileName && proj.fileSize),
+    tags: tagList,
+    creatorUsername,
+    creatorHasAvatar,
+    creatorAvatarUrl,
+  } as Project & {
+    tags: string[]
+    hasFile: boolean
+    creatorUsername?: string
+    creatorHasAvatar?: boolean
+    creatorAvatarUrl?: string | null
+  }
 }
 
 export async function setProjectTags(projectId: number, tagNames: string[]) {

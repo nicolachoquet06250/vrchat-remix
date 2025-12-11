@@ -1,4 +1,4 @@
-import {mysqlTable, serial, varchar, text, int, datetime, index, unique, customType} from 'drizzle-orm/mysql-core'
+import {mysqlTable, varchar, text, int, datetime, index, unique, customType} from 'drizzle-orm/mysql-core'
 import {relations, sql} from 'drizzle-orm'
 
 type LongBlobProps = {
@@ -15,7 +15,7 @@ const longblob = customType<LongBlobProps>({
 });
 
 export const users = mysqlTable('users', {
-  id: serial('id').primaryKey(),
+  id: int('id').autoincrement().primaryKey(),
   email: varchar('email', { length: 255 }).notNull(),
   username: varchar('username', { length: 100 }).notNull(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
@@ -29,7 +29,7 @@ export const users = mysqlTable('users', {
 }))
 
 export const projects = mysqlTable('projects', {
-  id: serial('id').primaryKey(),
+  id: int('id').autoincrement().primaryKey(),
   userId: int('user_id').notNull(),
   name: varchar('name', { length: 200 })
       .notNull(),
@@ -50,7 +50,7 @@ export const projects = mysqlTable('projects', {
 
 // Images associées aux projets
 export const projectImages = mysqlTable('project_images', {
-  id: serial('id').primaryKey(),
+  id: int('id').autoincrement().primaryKey(),
   projectId: int('project_id').notNull(),
   fileName: varchar('file_name', { length: 255 }).notNull(),
   fileType: varchar('file_type', { length: 100 }).notNull(),
@@ -62,8 +62,25 @@ export const projectImages = mysqlTable('project_images', {
   projectIdx: index('project_images_project_idx').on(table.projectId),
 }))
 
+// Avatar utilisateur dans une table séparée, 1:1 avec users
+export const userAvatars = mysqlTable('user_avatars', {
+  id: int('id').autoincrement().primaryKey(),
+  userId: int('user_id').notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+  fileName: varchar('file_name', { length: 255 }),
+  fileType: varchar('file_type', { length: 100 }),
+  fileSize: int('file_size'),
+  fileData: longblob('file_data', { length: 16_000_000 }),
+  createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+  updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+}, (table) => ({
+  userUnique: unique('user_avatars_user_unique').on(table.userId),
+}))
+
 export const tags = mysqlTable('tags', {
-  id: serial('id').primaryKey(),
+  id: int('id').autoincrement().primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
 }, (table) => ({
   nameUnique: unique('tags_name_unique').on(table.name),
@@ -78,8 +95,8 @@ export const projectTags = mysqlTable('project_tags', {
   tagIdx: index('pt_tag_idx').on(table.tagId),
 }))
 
-export const usersRelations = relations(users, ({ many }) => ({
-  projects: many(projects)
+export const usersRelations = relations(users, ({ many, one }) => ({
+  avatar: many(userAvatars),
 }))
 
 export const projectsRelations = relations(projects, ({ many }) => ({
@@ -93,6 +110,13 @@ export const tagsRelations = relations(tags, ({ many }) => ({
 
 export const projectImagesRelations = relations(projectImages, ({ }) => ({}))
 
+export const userAvatarsRelations = relations(userAvatars, ({ one }) => ({
+  user: one(users, {
+    fields: [userAvatars.userId],
+    references: [users.id],
+  })
+}))
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Project = typeof projects.$inferSelect
@@ -101,3 +125,4 @@ export type Tag = typeof tags.$inferSelect
 export type NewTag = typeof tags.$inferInsert
 export type ProjectImage = typeof projectImages.$inferSelect
 export type NewProjectImage = typeof projectImages.$inferInsert
+export type UserAvatar = typeof userAvatars.$inferSelect

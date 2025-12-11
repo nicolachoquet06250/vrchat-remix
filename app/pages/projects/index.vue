@@ -59,7 +59,18 @@ function go(p: number) {
             <div v-else class="cover placeholder" />
 
             <span class="title">{{ ucFirst(p.name) }}</span>
-            <div class="meta">par #{{ p.userId }} • {{ new Date(p.createdAt).toLocaleDateString() }}</div>
+            <div class="meta">
+              <span class="creator">
+                <template v-if="p.creatorHasAvatar && p.creatorAvatarUrl">
+                  <img class="avatar" :src="p.creatorAvatarUrl" :alt="`Avatar de ${p.creatorUsername || 'utilisateur'}`" />
+                </template>
+                <template v-else>
+                  <span class="avatar placeholder">{{ (p.creatorUsername || '#'+p.userId).charAt(0).toUpperCase() }}</span>
+                </template>
+                <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
+              </span>
+              • {{ new Date(p.createdAt).toLocaleDateString() }}
+            </div>
             <p class="desc">{{ p.description ? ucFirst(p.description) : 'Description vide' }}</p>
             <div class="tags">
               <span class="tag" v-for="t in p.tags" :key="t">#{{ t }}</span>
@@ -101,7 +112,11 @@ function go(p: number) {
 .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover.placeholder { background: repeating-linear-gradient(45deg, #f7f7f7, #f7f7f7 10px, #f2f2f2 10px, #f2f2f2 20px); }
 .title { font-weight: 600; }
-.meta { color: #666; font-size: 12px; }
+.meta { color: #666; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.creator { display: inline-flex; align-items: center; gap: 6px; }
+.avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: inline-block; }
+.avatar.placeholder { background: #f0f0f0; color: #666; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.username { font-weight: 500; }
 .desc { color: #333; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag { background: #f5f5f5; border: 1px solid #eee; padding: 2px 6px; border-radius: 999px; font-size: 12px; }

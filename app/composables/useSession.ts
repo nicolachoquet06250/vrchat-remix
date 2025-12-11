@@ -1,4 +1,11 @@
-export type SessionUser = { id: number; email: string; username: string; createdAt: string }
+export type SessionUser = {
+  id: number
+  email: string
+  username: string
+  createdAt: string
+  hasAvatar?: boolean
+  avatarUrl?: string | null
+}
 
 export function useSession() {
   const user = useState<SessionUser | null>('session:user', () => null)

@@ -1,6 +1,6 @@
 import { and, eq, inArray, like, sql } from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
-import {projects, projectTags, tags, users, projectImages, type Project} from '~~/server/db/schema'
+import {projects, projectTags, tags, users, projectImages, userAvatars, type Project} from '~~/server/db/schema'
 import { z } from 'zod'
 
 const QuerySchema = z.object({
@@ -10,7 +10,14 @@ const QuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 })
 
-type PaginationItem = Project & {tags: string[], hasFile: boolean, coverImageId: string|null};
+type PaginationItem = Project & {
+  tags: string[]
+  hasFile: boolean
+  coverImageId: string | null
+  creatorUsername?: string
+  creatorHasAvatar?: boolean
+  creatorAvatarUrl?: string | null
+};
 
 export default defineEventHandler(async (event): Promise<{
   items: PaginationItem[],
@@ -63,8 +70,11 @@ export default defineEventHandler(async (event): Promise<{
     .offset(offset)
 
   const ids = rows.map(r => r.id)
+  const userIds = Array.from(new Set(rows.map(r => r.userId)))
   let tagsByProject = new Map<number, string[]>()
   let coverByProject = new Map<number, number>()
+  let usernameByUserId = new Map<number, string>()
+  let hasAvatarByUserId = new Map<number, boolean>()
   if (ids.length) {
     const pts = await db.select().from(projectTags)
       .leftJoin(tags, eq(projectTags.tagId, tags.id))
@@ -89,6 +99,16 @@ export default defineEventHandler(async (event): Promise<{
     for (const r of coverRows) {
       if (r.coverImageId) coverByProject.set(r.projectId as number, Number(r.coverImageId))
     }
+
+    // Fetch creators usernames in batch
+    if (userIds.length) {
+      const userRows = await db.select({ id: users.id, username: users.username }).from(users).where(inArray(users.id, userIds))
+      for (const u of userRows) usernameByUserId.set(Number(u.id), u.username)
+
+      // Fetch avatars existence in batch (without blobs)
+      const avaRows = await db.select({ userId: userAvatars.userId }).from(userAvatars).where(inArray(userAvatars.userId, userIds))
+      for (const a of avaRows) hasAvatarByUserId.set(Number(a.userId), true)
+    }
   }
 
   const items = rows.map((p: any) => ({
@@ -102,6 +122,9 @@ export default defineEventHandler(async (event): Promise<{
     createdAt: p.createdAt,
     tags: tagsByProject.get(p.id) || [],
     coverImageId: coverByProject.get(p.id) || null,
+    creatorUsername: usernameByUserId.get(p.userId) || undefined,
+    creatorHasAvatar: hasAvatarByUserId.get(p.userId) || false,
+    creatorAvatarUrl: hasAvatarByUserId.get(p.userId) ? `/api/users/${p.userId}/avatar` : null,
   }))
 
   return { items: items as PaginationItem[], total, page, pageSize }
