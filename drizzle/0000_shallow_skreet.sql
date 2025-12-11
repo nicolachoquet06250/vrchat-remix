@@ -5,7 +5,7 @@ CREATE TABLE `project_tags` (
 );
 --> statement-breakpoint
 CREATE TABLE `projects` (
-	`id` serial AUTO_INCREMENT NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
 	`user_id` int NOT NULL,
 	`name` varchar(200) NOT NULL,
 	`description` text,
@@ -19,14 +19,14 @@ CREATE TABLE `projects` (
 );
 --> statement-breakpoint
 CREATE TABLE `tags` (
-	`id` serial AUTO_INCREMENT NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
 	`name` varchar(100) NOT NULL,
 	CONSTRAINT `tags_id` PRIMARY KEY(`id`),
 	CONSTRAINT `tags_name_unique` UNIQUE(`name`)
 );
 --> statement-breakpoint
 CREATE TABLE `users` (
-	`id` serial AUTO_INCREMENT NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
 	`email` varchar(255) NOT NULL,
 	`username` varchar(100) NOT NULL,
 	`password_hash` varchar(255) NOT NULL,

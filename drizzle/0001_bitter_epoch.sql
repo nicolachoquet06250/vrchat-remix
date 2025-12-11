@@ -1,5 +1,5 @@
 CREATE TABLE `project_images` (
-	`id` serial AUTO_INCREMENT NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
 	`project_id` int NOT NULL,
 	`file_name` varchar(255) NOT NULL,
 	`file_type` varchar(100) NOT NULL,
