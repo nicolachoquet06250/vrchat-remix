@@ -68,20 +68,24 @@ jobs:
           name: build
           path: build
 
+      - name: Debug artifact contents
+        run: |
+          echo "Listing downloaded artifact contents"
+          ls -laR build || true
+
       - name: Copy files to server (SCP)
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.9
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          # Copy the built artifact folder contents
           source: |
-            build/output/**
-            build/package.json
-            build/package-lock.json
-            build/.env
+            build/artifact/**
           target: ${{ secrets.REMOTE_PATH }}
-          strip_components: 1
+          # Strip both the leading 'build' and 'artifact' directories
+          strip_components: 2
 
       - name: Post-deploy remote commands (install + migrate)
         uses: appleboy/ssh-action@v1.2.0
