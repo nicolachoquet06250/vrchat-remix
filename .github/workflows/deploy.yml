@@ -35,15 +35,23 @@ jobs:
       - name: Install dependencies
         run: npm i
 
+      - name: migrations
+        run: |
+          # Run database migrations (Drizzle)
+          if npm run | grep -q "db:migrate"; then
+            npm run db:migrate
+          else
+            echo "No npm script db:migrate found. Skipping migrations."
+          fi
+
       - name: Build
         run: npm run build
 
       - name: Prepare artifacts
         run: |
           mkdir -p artifact
-          mkdir -p artifact/output
           # Nitro output (SSR node-server)
-          cp -r .output/* artifact/output
+          cp -r .output/* artifact
           # Package files for prod install on server (for migrations or any runtime deps)
           cp package.json artifact/package.json
           if [ -f package-lock.json ]; then cp package-lock.json artifact/package-lock.json; fi
@@ -112,13 +120,7 @@ jobs:
             fi
             # Install dependencies (include dev to allow running drizzle-kit migrations)
             if [ -f package.json ]; then
-              npm ci
-            fi
-            # Run database migrations (Drizzle)
-            if npm run | grep -q "db:migrate"; then
-              npm run db:migrate
-            else
-              echo "No npm script db:migrate found. Skipping migrations."
+              npm i
             fi
             echo "Deployed to ${{ secrets.REMOTE_PATH }}"
 
