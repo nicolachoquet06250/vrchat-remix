@@ -41,9 +41,9 @@ jobs:
       - name: Prepare artifacts
         run: |
           mkdir -p artifact
-          mkdir -p artifact/.output
+          mkdir -p artifact/output
           # Nitro output (SSR node-server)
-          cp -r .output/* artifact/.output
+          cp -r .output/* artifact/output
           # Package files for prod install on server (for migrations or any runtime deps)
           cp package.json artifact/package.json
           if [ -f package-lock.json ]; then cp package-lock.json artifact/package-lock.json; fi
@@ -76,7 +76,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           source: |
-            build/.output/**
+            build/output/**
             build/package.json
             build/package-lock.json
             build/.env
