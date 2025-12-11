@@ -1,0 +1,29 @@
+{
+  "name": "vrchat-remix",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config=drizzle.config.ts"
+  },
+  "dependencies": {
+    "@vueuse/core": "^14.1.0",
+    "argon2": "^0.41.1",
+    "drizzle-orm": "^0.45.1",
+    "jose": "^5.9.6",
+    "mysql2": "^3.11.4",
+    "nuxt": "^4.2.2",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.8"
+  }
+}

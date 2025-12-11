@@ -1,0 +1,38 @@
+import { z } from 'zod'
+import { getDb } from '~~/server/db/client'
+import { verifyPassword, createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
+
+const LoginSchema = z.object({
+  emailOrUsername: z.string().min(3),
+  password: z.string().min(8).max(128),
+})
+
+export default defineEventHandler( async (event) => {
+  const body = await readBody(event)
+  const parsed = LoginSchema.safeParse(body)
+  if (!parsed.success) {
+    throw createError({ statusCode: 400, statusMessage: 'Invalid body', data: parsed.error.flatten() })
+  }
+  const { emailOrUsername, password } = parsed.data
+
+  const db = getDb()
+  const query = db.query;
+  if ('users' in query) {
+    const user = await query.users.findFirst({
+      where: (u, { eq, or }) => or(eq(u.email, emailOrUsername), eq(u.username, emailOrUsername)),
+    })
+    if (!user) {
+      throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
+    }
+    const ok = await verifyPassword(user.passwordHash, password)
+    if (!ok) {
+      throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
+    }
+
+    const token = await createSessionJwt({ sub: String(user.id), email: user.email, username: user.username })
+    setSessionCookie(event, token)
+    return { id: user.id, email: user.email, username: user.username }
+  }
+
+  return query;
+})
