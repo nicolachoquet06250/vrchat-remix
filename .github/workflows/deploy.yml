@@ -101,7 +101,7 @@ jobs:
           source: build
           target: ${{ secrets.REMOTE_PATH }}
           # Strip both the leading 'build' and 'artifact' directories
-          strip_components: 2
+          strip_components: 1
 
       - name: Post-deploy remote commands (install + migrate)
         uses: appleboy/ssh-action@v1.2.0
