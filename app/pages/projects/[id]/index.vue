@@ -2,6 +2,7 @@
 const route = useRoute()
 const id = Number(route.params.id)
 const { user } = useSession()
+const { ucFirst } = useHelpers()
 
 const { data, pending, error } = await useFetch(`/api/projects/${id}`)
 
@@ -38,10 +39,11 @@ const isOwner = computed(() => {
     <div v-else-if="error">Introuvable</div>
     <div v-else class="card">
       <div class="header">
-        <h1 class="title">{{ data!.name }}</h1>
+        <h1 class="title">{{ ucFirst(data!.name) }}</h1>
         <div class="spacer" />
         <NuxtLink v-if="isOwner" :to="{path: `/projects/${id}/edit`}" class="btn">Modifier</NuxtLink>
       </div>
+
       <div class="meta">
         <span class="creator">
           <template v-if="data!.creatorHasAvatar && data!.creatorAvatarUrl">
@@ -58,7 +60,20 @@ const isOwner = computed(() => {
         </span>
         • {{ new Date(data!.createdAt).toLocaleString() }}
       </div>
-      <p class="desc">{{ data!.description }}</p>
+
+      <p class="desc">{{ ucFirst(data!.description ?? '') }}</p>
+
+      <div class="tags" v-if="data!.tags.length > 0">
+        <span class="tag" v-for="t in data!.tags" :key="t">#{{ t }}</span>
+      </div>
+
+      <div class="file" v-if="data!.hasFile">
+        <div>Fichier: {{ data!.fileName }} <span v-if="data!.fileSize">({{ Math.round(data!.fileSize!/1024) }} Ko)</span></div>
+      </div>
+      <div class="actions">
+        <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">Télécharger</a>
+      </div>
+
       <template v-if="hasImages">
         <div class="carousel">
           <button class="nav" @click="prev" aria-label="Précédent">‹</button>
@@ -86,15 +101,6 @@ const isOwner = computed(() => {
           />
         </div>
       </template>
-      <div class="tags" v-if="data!.tags.length > 0">
-        <span class="tag" v-for="t in data!.tags" :key="t">#{{ t }}</span>
-      </div>
-      <div class="file" v-if="data!.hasFile">
-        <div>Fichier: {{ data!.fileName }} <span v-if="data!.fileSize">({{ Math.round(data!.fileSize!/1024) }} Ko)</span></div>
-      </div>
-      <div class="actions">
-        <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">Télécharger</a>
-      </div>
     </div>
   </div>
 </template>
