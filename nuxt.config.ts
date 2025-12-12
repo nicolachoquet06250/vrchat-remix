@@ -14,5 +14,13 @@ export default defineNuxtConfig({
     jwtSecret: process.env.JWT_SECRET,
     // Public (exposed to client)
     public: {}
+  },
+
+  app: {
+    head: {
+      meta: [
+        {name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'}
+      ]
+    }
   }
 })

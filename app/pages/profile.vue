@@ -4,6 +4,10 @@ const { uploading, error, uploadAvatar } = useAvatar()
 onMounted(() => refresh())
 const router = useRouter()
 
+definePageMeta({
+  name: 'profile'
+})
+
 useSeoMeta({
   ogTitle: computed(() => `Profile - ${user.value?.username}`),
   ogImage: '/vrchat-remix.png',

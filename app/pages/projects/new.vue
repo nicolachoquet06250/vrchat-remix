@@ -3,6 +3,10 @@ const { user, refresh } = useSession()
 const router = useRouter()
 onMounted(() => refresh())
 
+definePageMeta({
+  name: 'create-project'
+})
+
 useSeoMeta({
   ogTitle: 'Créer un projet',
   ogImage: '/vrchat-remix.png',

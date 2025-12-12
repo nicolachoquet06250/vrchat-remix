@@ -4,6 +4,10 @@ const password = ref('')
 const { login, error, user } = useSession()
 const router = useRouter()
 
+definePageMeta({
+  name: 'login'
+})
+
 useSeoMeta({
   ogTitle: 'Se connecter',
   ogImage: '/vrchat-remix.png',

@@ -6,6 +6,10 @@ const { register, error } = useSession()
 const router = useRouter()
 const { uploadAvatar, error: avatarError } = useAvatar()
 
+definePageMeta({
+  name: 'register'
+})
+
 useSeoMeta({
   ogTitle: `S'inscrire`,
   ogImage: '/vrchat-remix.png',

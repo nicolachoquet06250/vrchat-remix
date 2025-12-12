@@ -3,6 +3,10 @@ const route = useRoute()
 const id = Number(route.params.id)
 const router = useRouter()
 
+definePageMeta({
+  name: 'edit-project'
+})
+
 const { user, refresh: refreshSession } = useSession()
 
 useSeoMeta({
@@ -250,7 +254,7 @@ async function onDeleteImage(imageId: number) {
       <div class="actions">
         <button type="submit" :disabled="saving" class="btn">Enregistrer</button>
         <button type="button" class="danger" :disabled="deleting" @click="onDelete">Supprimer</button>
-        <NuxtLink :to="{path: `/projects/${id}`}" class="link btn">Annuler</NuxtLink>
+        <NuxtLink :to="{name: 'project', params: {id}}" class="link btn">Annuler</NuxtLink>
       </div>
       <p v-if="errMsg" class="error">{{ errMsg }}</p>
     </form>

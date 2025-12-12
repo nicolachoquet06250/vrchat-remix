@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import {useHelpers} from "@/composables/useHelpers";
 
+definePageMeta({
+  name: 'home'
+})
+
 const route = useRoute()
 const router = useRouter()
 const { user } = useSession()
@@ -50,7 +54,7 @@ function go(p: number) {
   <div class="container">
     <div class="header">
       <h1>Projets</h1>
-      <NuxtLink v-if="user" to="/projects/new" class="btn">Nouveau projet</NuxtLink>
+      <NuxtLink v-if="user" :to="{name: 'create-project'}" class="btn">Nouveau projet</NuxtLink>
     </div>
 
     <form class="filters" @submit.prevent="onSearch">
@@ -62,15 +66,20 @@ function go(p: number) {
     <div v-if="pending">Chargement…</div>
     <div v-else>
       <div v-if="!data?.items?.length">Aucun projet trouvé.</div>
+
       <ul class="grid">
         <li v-for="p in data?.items!" :key="p.id" class="card">
-          <NuxtLink :to="{path: `/projects/${p.id}`}">
+          <NuxtLink :to="{
+            name: 'project',
+            params: {id: p.id}
+          }">
             <div v-if="p.coverImageId" class="cover">
               <img :src="`/api/projects/images/${p.coverImageId}`" :alt="`${p.name} cover`" />
             </div>
             <div v-else class="cover placeholder" />
 
             <span class="title">{{ ucFirst(p.name) }}</span>
+
             <div class="meta">
               <span class="creator">
                 <template v-if="p.creatorHasAvatar && p.creatorAvatarUrl">
@@ -79,11 +88,14 @@ function go(p: number) {
                 <template v-else>
                   <span class="avatar placeholder">{{ (p.creatorUsername || '#'+p.userId).charAt(0).toUpperCase() }}</span>
                 </template>
+
                 <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
               </span>
               • {{ new Date(p.createdAt).toLocaleDateString() }}
             </div>
+
             <p class="desc">{{ p.description ? ucFirst(p.description) : 'Description vide' }}</p>
+
             <div class="tags">
               <span class="tag" v-for="t in p.tags" :key="t">#{{ t }}</span>
             </div>

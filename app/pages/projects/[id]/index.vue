@@ -1,4 +1,7 @@
 <script setup lang="ts">
+definePageMeta({
+  name: 'project'
+})
 const route = useRoute()
 const id = Number(route.params.id)
 const { user } = useSession()
@@ -59,7 +62,7 @@ const isOwner = computed(() => {
       <div class="header">
         <h1 class="title">{{ ucFirst(data!.name) }}</h1>
         <div class="spacer" />
-        <NuxtLink v-if="isOwner" :to="{path: `/projects/${id}/edit`}" class="btn">Modifier</NuxtLink>
+        <NuxtLink v-if="isOwner" :to="{name: 'edit-project', params: {id}}" class="btn">Modifier</NuxtLink>
       </div>
 
       <div class="meta">
