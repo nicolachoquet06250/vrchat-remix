@@ -9,20 +9,20 @@ definePageMeta({
 
 const { user, refresh: refreshSession } = useSession()
 
-useSeoMeta({
-  ogTitle: computed(() => `Modifier le projet "${data.value!.name}"`),
-  ogImage: '/vrchat-remix.png',
-  description: 'créer un nouveau projet remix',
-  ogDescription: 'créer un nouveau projet remix',
-  twitterCard: 'app'
-})
-
 onMounted(() => {
   refreshSession()
   loadImages()
 })
 
 const { data, pending, error } = await useFetch(`/api/projects/${id}`)
+
+useSeoMeta({
+  ogTitle: computed(() => `Modifier le projet "${data.value?.name}"`),
+  ogImage: '/vrchat-remix.png',
+  description: 'créer un nouveau projet remix',
+  ogDescription: 'créer un nouveau projet remix',
+  twitterCard: 'app'
+})
 
 const isOwner = computed(() => {
   if (!user.value || !data.value) return false
