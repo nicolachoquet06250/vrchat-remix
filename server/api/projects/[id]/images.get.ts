@@ -17,5 +17,8 @@ export default defineEventHandler(async (event) => {
     .select({ id: projectImages.id, fileName: projectImages.fileName, fileType: projectImages.fileType, fileSize: projectImages.fileSize, createdAt: projectImages.createdAt })
     .from(projectImages)
     .where(eq(projectImages.projectId, id))
-  return rows
+  return rows.map(r => ({
+    ...r,
+    forCarousel: `/api/projects/images/carousel-image?id=${r.id}&d=${new Date().getTime()}`
+  }))
 })

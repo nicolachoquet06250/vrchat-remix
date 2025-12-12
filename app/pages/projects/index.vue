@@ -6,6 +6,14 @@ const router = useRouter()
 const { user } = useSession()
 const { ucFirst } = useHelpers()
 
+useSeoMeta({
+  ogTitle: 'Liste des projets',
+  ogImage: '/vrchat-remix.png',
+  description: 'Equivalent de la fonctionnalité remix de meta pour vrchat',
+  ogDescription: 'Equivalent de la fonctionnalité remix de meta pour vrchat',
+  twitterCard: 'app'
+})
+
 const q = ref<string>((route.query.q as string) || '')
 const tag = ref<string>((route.query.tag as string) || '')
 const page = ref<number>(Number(route.query.page || 1))
@@ -35,6 +43,10 @@ function go(p: number) {
 </script>
 
 <template>
+  <Head>
+    <Title>Liste des projets</Title>
+  </Head>
+
   <div class="container">
     <div class="header">
       <h1>Projets</h1>

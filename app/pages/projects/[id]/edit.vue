@@ -5,6 +5,14 @@ const router = useRouter()
 
 const { user, refresh: refreshSession } = useSession()
 
+useSeoMeta({
+  ogTitle: computed(() => `Modifier le projet "${data.value!.name}"`),
+  ogImage: '/vrchat-remix.png',
+  description: 'créer un nouveau projet remix',
+  ogDescription: 'créer un nouveau projet remix',
+  twitterCard: 'app'
+})
+
 onMounted(() => {
   refreshSession()
   loadImages()
@@ -175,6 +183,10 @@ async function onDeleteImage(imageId: number) {
 </script>
 
 <template>
+  <Head>
+    <Title>Modifier le projet "{{data!.name}}"</Title>
+  </Head>
+
   <div class="container">
     <h1>Modifier le projet</h1>
     <div v-if="pending">Chargement…</div>

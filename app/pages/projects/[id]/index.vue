@@ -8,6 +8,20 @@ const { data, pending, error } = await useFetch(`/api/projects/${id}`)
 
 // images for carousel
 const { data: images } = await useFetch(`/api/projects/${id}/images`)
+
+useSeoMeta({
+  ogTitle: computed(() => data.value!.name),
+  ogImage: computed(() => {
+    if (images.value && images.value.length > 0) {
+      return `/api/projects/images/og-image?id=${[...images.value].shift()!.id}&d=${new Date().getTime()}`
+    }
+    return '/vrchat-remix.png'
+  }),
+  description: computed(() => data.value!.description),
+  ogDescription: computed(() => data.value!.description),
+  twitterCard: 'app'
+})
+
 const current = ref(0)
 // transition direction for slide animation: 'slide-left' or 'slide-right'
 const transitionName = ref('')
@@ -34,6 +48,10 @@ const isOwner = computed(() => {
 </script>
 
 <template>
+  <Head>
+    <Title>{{ucFirst(data!.name)}}</Title>
+  </Head>
+
   <div class="container">
     <div v-if="pending">Chargement…</div>
     <div v-else-if="error">Introuvable</div>
@@ -83,7 +101,7 @@ const isOwner = computed(() => {
                   v-if="currentImg"
                   class="slide"
                   :key="current"
-                  :src="`/api/projects/images/${currentImg.id}`"
+                  :src="currentImg.forCarousel"
                   :alt="currentImg.fileName"
               />
             </Transition>

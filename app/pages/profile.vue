@@ -4,6 +4,14 @@ const { uploading, error, uploadAvatar } = useAvatar()
 onMounted(() => refresh())
 const router = useRouter()
 
+useSeoMeta({
+  ogTitle: computed(() => `Profile - ${user.value?.username}`),
+  ogImage: '/vrchat-remix.png',
+  description: computed(() => `la page de profile de ${user.value?.username}`),
+  ogDescription: computed(() => `la page de profile de ${user.value?.username}`),
+  twitterCard: 'app'
+})
+
 const file = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
 
@@ -44,6 +52,10 @@ async function onUpload() {
 </script>
 
 <template>
+  <Head>
+    <Title>Profile - {{ user?.username }}</Title>
+  </Head>
+
   <div class="container">
     <h1>Mon profil</h1>
     <div v-if="user" class="card">

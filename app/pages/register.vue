@@ -6,6 +6,14 @@ const { register, error } = useSession()
 const router = useRouter()
 const { uploadAvatar, error: avatarError } = useAvatar()
 
+useSeoMeta({
+  ogTitle: `S'inscrire`,
+  ogImage: '/vrchat-remix.png',
+  description: computed(() => `page d'inscription`),
+  ogDescription: computed(() => `page d'inscription`),
+  twitterCard: 'app'
+})
+
 const file = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
 

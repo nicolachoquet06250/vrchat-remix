@@ -3,6 +3,14 @@ const { user, refresh } = useSession()
 const router = useRouter()
 onMounted(() => refresh())
 
+useSeoMeta({
+  ogTitle: 'Créer un projet',
+  ogImage: '/vrchat-remix.png',
+  description: 'créer un nouveau projet remix',
+  ogDescription: 'créer un nouveau projet remix',
+  twitterCard: 'app'
+})
+
 const name = ref('')
 const description = ref('')
 const file = ref<File | null>(null)
@@ -97,6 +105,10 @@ async function onSubmit() {
 </script>
 
 <template>
+  <Head>
+    <Title>Créer un projet</Title>
+  </Head>
+
   <div class="container">
     <h1>Nouveau projet</h1>
     <div v-if="!user">Vous devez être connecté pour créer un projet.</div>

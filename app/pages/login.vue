@@ -4,6 +4,14 @@ const password = ref('')
 const { login, error, user } = useSession()
 const router = useRouter()
 
+useSeoMeta({
+  ogTitle: 'Se connecter',
+  ogImage: '/vrchat-remix.png',
+  description: 'se connecter',
+  ogDescription: 'se connecter',
+  twitterCard: 'app'
+})
+
 async function onSubmit() {
   const ok = await login(emailOrUsername.value, password.value)
   if (ok) await router.push('/projects')
@@ -11,6 +19,10 @@ async function onSubmit() {
 </script>
 
 <template>
+  <Head>
+    <Title>Se connecter</Title>
+  </Head>
+
   <div class="container">
     <h1>Connexion</h1>
     <form @submit.prevent="onSubmit" class="form">
