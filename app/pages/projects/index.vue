@@ -58,8 +58,10 @@ function go(p: number) {
     </div>
 
     <form class="filters" @submit.prevent="onSearch">
-      <input v-model="q" type="search" placeholder="Rechercher un projet" />
-      <input v-model="tag" type="text" placeholder="Tag (ex: avatar)" />
+      <div>
+        <input v-model="q" type="search" placeholder="Rechercher un projet" />
+        <input v-model="tag" type="text" placeholder="Tag (ex: avatar)" />
+      </div>
       <button type="submit">Rechercher</button>
     </form>
 
@@ -69,10 +71,7 @@ function go(p: number) {
 
       <ul class="grid">
         <li v-for="p in data?.items!" :key="p.id" class="card">
-          <NuxtLink :to="{
-            name: 'project',
-            params: {id: p.id}
-          }">
+          <NuxtLink :to="{name: 'project', params: {id: p.id}}">
             <div v-if="p.coverImageId" class="cover">
               <img :src="`/api/projects/images/${p.coverImageId}`" :alt="`${p.name} cover`" />
             </div>
@@ -116,10 +115,29 @@ function go(p: number) {
 .container { display: grid; gap: 16px; }
 .header { display: flex; align-items: center; gap: 12px; }
 .header .btn { margin-left: auto; }
-.filters { display: flex; gap: 8px; align-items: center; }
-.grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 12px; padding: 0; margin: 0; }
+.filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  > div {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+  }
+}
+.grid { list-style: none; display: flex; flex-direction: row; flex-wrap: wrap; gap: 12px; padding: 0; margin: 0; }
 .card {
-  border: 1px solid #eee; border-radius: 8px; padding: 12px; display: grid; gap: 6px; cursor: pointer;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+  cursor: pointer;
+  width: 15%;
+  min-width: 320px;
   * {
     text-decoration: none;
     color: black;
