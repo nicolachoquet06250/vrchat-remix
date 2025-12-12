@@ -18,6 +18,7 @@ useSeoMeta({
   twitterCard: 'app'
 })
 
+const searchBy = ref<'tag'|'project'>('project');
 const q = ref<string>((route.query.q as string) || '')
 const tag = ref<string>((route.query.tag as string) || '')
 const page = ref<number>(Number(route.query.page || 1))
@@ -58,11 +59,18 @@ function go(p: number) {
     </div>
 
     <form class="filters" @submit.prevent="onSearch">
-      <div>
-        <input v-model="q" type="search" placeholder="Rechercher un projet" />
-        <input v-model="tag" type="text" placeholder="Tag (ex: avatar)" />
+      <button @click="searchBy='project'" :disabled="searchBy==='project'" class="square-btn">P</button>
+      <button @click="searchBy='tag'" :disabled="searchBy==='tag'" class="square-btn">T</button>
+
+      <div class="search-zone">
+        <button type="submit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 640 640">
+            <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/>
+          </svg>
+        </button>
+        <input v-model="q" type="search" placeholder="Rechercher un projet" v-if="searchBy === 'project'" />
+        <input v-model="tag" type="text" placeholder="Tag (ex: avatar)" v-if="searchBy === 'tag'" />
       </div>
-      <button type="submit">Rechercher</button>
     </form>
 
     <div v-if="pending">Chargement…</div>
@@ -112,9 +120,60 @@ function go(p: number) {
 </template>
 
 <style scoped>
+a:focus, button:focus {
+  outline: 1px solid light-dark(#0005, #fff5);
+}
 .container { display: grid; gap: 16px; }
 .header { display: flex; align-items: center; gap: 12px; }
-.header .btn { margin-left: auto; }
+.header .btn {
+  margin-left: auto;
+  cursor: pointer;
+  transition: background-color .2s ease-in-out,
+  color .2s ease-in-out;
+
+  &:hover {
+    background-color: light-dark(#52c3ce66, #52c3ce);
+    color: light-dark(#000, #000);
+  }
+}
+.btn {
+  background-color: light-dark(#52c3ce, #181f29);
+  color: light-dark(#000, #fff);
+  padding: 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .2s ease-in-out,
+  color .2s ease-in-out;
+
+  &:hover {
+    background-color: light-dark(#52c3ce, #52c3ce);
+    color: light-dark(#fff, #000);
+  }
+}
+.square-btn {
+  background-color: light-dark(#fff, #181f29);
+  color: light-dark(#000, #fff);
+  border-radius: 10px;
+  text-decoration: none;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color .2s ease-in-out,
+  color .2s ease-in-out;
+
+  &:focus {
+    outline: 2px solid #52c3ce;
+  }
+
+  &:hover {
+    background-color: light-dark(#e6e6e6, #52c3ce);
+    color: light-dark(#000, #000);
+  }
+}
 .filters {
   display: flex;
   gap: 8px;
@@ -128,9 +187,38 @@ function go(p: number) {
     align-items: center;
   }
 }
+.search-zone {
+  border: 1px solid black;
+  background-color: light-dark(#fff, #0b141e);
+  border-radius: 5px;
+
+  &:has(input:focus) {
+    outline: light-dark(#0005, #fff5) solid 2px;
+    outline-offset: 1px;
+  }
+
+  > button {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    > svg > path {
+      fill: light-dark(#000, #fff);
+    }
+
+    + input {
+      border: none;
+      background-color: transparent;
+      outline: none;
+
+      &::placeholder {
+        color: light-dark(#000, #fff);
+      }
+    }
+  }
+}
 .grid { list-style: none; display: flex; flex-direction: row; flex-wrap: wrap; gap: 12px; padding: 0; margin: 0; }
 .card {
-  border: 1px solid #eee;
+  border: 1px solid light-dark(#eee, #3a3a3a);
   border-radius: 8px;
   padding: 12px;
   display: grid;
@@ -140,27 +228,39 @@ function go(p: number) {
   min-width: 320px;
   * {
     text-decoration: none;
-    color: black;
+    color: light-dark(#000, #fff);
+  }
+
+  > a {
+    outline: none;
+  }
+
+  &:has(> a:focus) {
+    outline: 1px solid light-dark(#0005, #57cfd5);
   }
 
   &:has(> a) {
     transition: background-color .5s ease-in-out;
     &:hover {
-      background-color: #e6e6e6;
+      background-color: light-dark(#e6e6e6, #17233a);
+
+      .tag {
+        border-color: #56cbd0;
+      }
     }
   }
 }
-.cover { width: 100%; height: 160px; border-radius: 6px; overflow: hidden; background: #f2f2f2; border: 1px solid #eee; }
+.cover { width: 100%; height: 160px; margin-bottom: 15px; border-radius: 6px; overflow: hidden; background: light-dark(#f2f2f2, #080f19); border: 1px solid light-dark(#eee, #3a3a3a); }
 .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover.placeholder { background: repeating-linear-gradient(45deg, #f7f7f7, #f7f7f7 10px, #f2f2f2 10px, #f2f2f2 20px); }
 .title { font-weight: 600; }
-.meta { color: #666; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.meta { color: light-dark(#666, #fff); font-size: 12px; display: flex; align-items: center; gap: 6px; }
 .creator { display: inline-flex; align-items: center; gap: 6px; }
 .avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: inline-block; }
 .avatar.placeholder { background: #f0f0f0; color: #666; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 .username { font-weight: 500; }
-.desc { color: #333; }
+.desc { color: light-dark(#333, #fff); }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag { background: #f5f5f5; border: 1px solid #eee; padding: 2px 6px; border-radius: 999px; font-size: 12px; }
+.tag { background: light-dark(#56cbd0, #131f29); border: 1px solid light-dark(#fff, #131f29); color: light-dark(#fff, #56cbd0); font-weight: bold; padding: 2px 6px; border-radius: 999px; font-size: 12px; transition: border-bottom-color .5s ease-in-out, border-top-color .5s ease-in-out, border-right-color .5s ease-in-out, border-left-color .5s ease-in-out; }
 .pagination { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 8px; }
 </style>
