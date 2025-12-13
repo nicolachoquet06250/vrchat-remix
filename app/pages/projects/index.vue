@@ -161,17 +161,20 @@ a:focus, button:focus {
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   transition: background-color .2s ease-in-out,
   color .2s ease-in-out;
 
-  &:focus {
-    outline: 2px solid #52c3ce;
-  }
+  &:not(:disabled) {
+    cursor: pointer;
 
-  &:hover {
-    background-color: light-dark(#e6e6e6, #52c3ce);
-    color: light-dark(#000, #000);
+    &:focus {
+      outline: 2px solid #52c3ce;
+    }
+
+    &:hover {
+      background-color: light-dark(#e6e6e6, #52c3ce);
+      color: light-dark(#000, #000);
+    }
   }
 }
 .filters {
@@ -201,6 +204,7 @@ a:focus, button:focus {
     background-color: transparent;
     border: none;
     outline: none;
+    cursor: pointer;
     > svg > path {
       fill: light-dark(#000, #fff);
     }
@@ -254,13 +258,25 @@ a:focus, button:focus {
 .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover.placeholder { background: repeating-linear-gradient(45deg, #f7f7f7, #f7f7f7 10px, #f2f2f2 10px, #f2f2f2 20px); }
 .title { font-weight: 600; }
-.meta { color: light-dark(#666, #fff); font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.meta { color: light-dark(#666, #fff); font-size: 12px; display: flex; align-items: center; gap: 6px; margin-top: 10px }
 .creator { display: inline-flex; align-items: center; gap: 6px; }
 .avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: inline-block; }
 .avatar.placeholder { background: #f0f0f0; color: #666; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 .username { font-weight: 500; }
 .desc { color: light-dark(#333, #fff); }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag { background: light-dark(#56cbd0, #131f29); border: 1px solid light-dark(#fff, #131f29); color: light-dark(#fff, #56cbd0); font-weight: bold; padding: 2px 6px; border-radius: 999px; font-size: 12px; transition: border-bottom-color .5s ease-in-out, border-top-color .5s ease-in-out, border-right-color .5s ease-in-out, border-left-color .5s ease-in-out; }
+.tag {
+  background: light-dark(#56cbd0, #131f29);
+  color: light-dark(#fff, #56cbd0);
+  border: 1px solid light-dark(#fff, #131f29);
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  transition: border-bottom-color .5s ease-in-out,
+  border-top-color .5s ease-in-out,
+  border-right-color .5s ease-in-out,
+  border-left-color .5s ease-in-out;
+}
 .pagination { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 8px; }
 </style>

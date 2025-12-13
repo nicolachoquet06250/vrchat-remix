@@ -139,16 +139,67 @@ const isOwner = computed(() => {
 .username { font-weight: 500; }
 .desc { white-space: pre-wrap; }
 .carousel { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; }
-.viewport { position: relative; width: 100%; height: 360px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; background: #fafafa; display: flex; align-items: center; justify-content: center; }
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  border: 1px solid light-dark(#eee, #3a3a3a);
+  border-radius: 8px;
+  overflow: hidden;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .slide { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
-.nav { border: 1px solid #ddd; background: #fff; border-radius: 6px; width: 36px; height: 36px; font-size: 22px; line-height: 1; cursor: pointer; }
+.nav {
+  border: 1px solid light-dark(#eee, #3a3a3a);
+  background-color: light-dark(#52c3ce, #181f29);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color .2s ease-in-out,
+  color .2s ease-in-out;
+
+  &:hover {
+    background-color: light-dark(#52c3ce, #52c3ce);
+    color: light-dark(#fff, #000);
+  }
+}
 .dots { display: flex; gap: 6px; justify-content: center; }
 .dot { width: 8px; height: 8px; background: #ddd; border-radius: 50%; border: none; cursor: pointer; padding: 0; }
 .dot.active { background: #2b59c3; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag { background: #f5f5f5; border: 1px solid #eee; padding: 2px 6px; border-radius: 999px; font-size: 12px; }
+.tag {
+  background: light-dark(#56cbd0, #131f29);
+  color: light-dark(#fff, #56cbd0);
+  border: 1px solid light-dark(#fff, #131f29);
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+}
 .actions { display: flex; gap: 8px; }
-.btn { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; text-decoration: none; cursor: pointer; }
+.btn {
+  background-color: light-dark(#52c3ce, #181f29);
+  color: light-dark(#000, #fff);
+  padding: 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .2s ease-in-out,
+  color .2s ease-in-out;
+
+  &:hover {
+    background-color: light-dark(#52c3ce66, #52c3ce);
+    color: light-dark(#000, #000);
+  }
+}
 .btn.primary { background: #2b59c3; color: #fff; border-color: #2b59c3; }
 
 /* Slide animations (plus douce/fluide) */

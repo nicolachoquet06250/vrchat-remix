@@ -38,6 +38,9 @@ const file = ref<File | null>(null)
 const images = ref<Array<{id:number,fileName:string,fileType:string,fileSize:number,createdAt:string}>>([])
 const imageFiles = ref<File[]>([])
 const previewUrls = ref<string[]>([])
+// Template refs for custom-styled file inputs
+const zipInput = ref<HTMLInputElement | null>(null)
+const imagesInput = ref<HTMLInputElement | null>(null)
 
 watchEffect(() => {
   const p = (data.value as any)
@@ -197,22 +200,32 @@ async function onDeleteImage(imageId: number) {
     <div v-else-if="error">Introuvable</div>
     <div v-else-if="!isOwner">Accès refusé</div>
     <form v-else class="form" @submit.prevent="onSave">
-      <label>
-        Nom
-        <input v-model="form.name" type="text" required minlength="3" maxlength="200" />
+      <label class="float">
+        <input v-model="form.name" type="text" required minlength="3" maxlength="200" placeholder=" " />
+        <span class="label-text">Nom</span>
       </label>
-      <label>
-        Description
-        <textarea v-model="form.description" rows="6" maxlength="5000" />
+      <label class="float">
+        <textarea v-model="form.description" rows="6" maxlength="5000" placeholder=" "></textarea>
+        <span class="label-text">Description</span>
       </label>
-      <label>
-        Remplacer le fichier ZIP (optionnel)
-        <input type="file" accept=".zip,application/zip" @change="(e:any)=>{ file = e.target.files?.[0] || null }" />
+      <label class="float">
+        <input v-model="form.tags" type="text" placeholder=" " />
+        <span class="label-text">Tags (séparés par des virgules)</span>
       </label>
-      <label>
-        Tags (séparés par des virgules)
-        <input v-model="form.tags" type="text" />
-      </label>
+      <div class="file-field">
+        <span class="file-label">Remplacer le fichier ZIP (optionnel)</span>
+        <div class="file-row">
+          <input
+            ref="zipInput"
+            class="sr-only"
+            type="file"
+            accept=".zip,application/zip"
+            @change="(e:any)=>{ file = e.target.files?.[0] || null }"
+          />
+          <button type="button" class="file-btn" @click="zipInput?.click()">Choisir un fichier ZIP</button>
+          <span class="filename" :class="{ empty: !file }">{{ file?.name || data?.fileName || 'Aucun fichier sélectionné' }}</span>
+        </div>
+      </div>
 
       <div class="gallery">
         <div class="gallery-header">
@@ -221,12 +234,15 @@ async function onDeleteImage(imageId: number) {
         </div>
         <div class="uploader">
           <input
+            ref="imagesInput"
+            class="sr-only"
             key="image-input"
             type="file"
             accept="image/*"
             multiple
             @change="onSelectImages"
           />
+          <button type="button" class="file-btn" @click="imagesInput?.click()">Ajouter des images</button>
           <button type="button" class="btn" :disabled="uploadingImages || imageFiles.length===0" @click="onUploadImages">
             {{ uploadingImages ? 'Envoi…' : 'Uploader' }}
           </button>
@@ -252,7 +268,7 @@ async function onDeleteImage(imageId: number) {
         <div v-else class="no-images">Aucune image pour le moment.</div>
       </div>
       <div class="actions">
-        <button type="submit" :disabled="saving" class="btn">Enregistrer</button>
+        <button type="submit" :disabled="saving" class="save-btn">Enregistrer</button>
         <button type="button" class="danger" :disabled="deleting" @click="onDelete">Supprimer</button>
         <NuxtLink :to="{name: 'project', params: {id}}" class="link btn">Annuler</NuxtLink>
       </div>
@@ -268,11 +284,11 @@ label { display: grid; gap: 6px; }
 .actions { display: flex; gap: 8px; align-items: center; }
 .error { color: #b00020; }
 .danger { background: #d9534f; color: #fff; border: 1px solid #d9534f; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-.link { margin-left: auto; }
+.link { margin-left: auto; text-decoration: none; color: #000; }
 
-.gallery { border-top: 1px solid #eee; padding-top: 8px; display: grid; gap: 10px; }
+.gallery { display: grid; gap: 10px; }
 .gallery-header { display: flex; align-items: center; gap: 8px; }
-.gallery-header h2 { font-size: 16px; margin: 0; }
+.gallery-header h2 { font-size: 16px; margin: 0; font-weight: normal; color: #bbb; + span {color: #bbb} }
 .hint { color: #666; font-size: 12px; }
 .uploader { display: flex; gap: 8px; align-items: center; }
 .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
@@ -281,4 +297,107 @@ label { display: grid; gap: 6px; }
 .thumb-actions { position: absolute; bottom: 6px; right: 6px; }
 .btn { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; background: #f9f9f9; cursor: pointer; }
 .no-images { color: #666; font-size: 13px; }
+
+/* Custom file inputs */
+.file-field { display: grid; gap: 6px; }
+.file-label { font-size: 14px; color: #bbb; }
+.file-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.file-btn {
+  padding: 10px 12px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .15s ease;
+}
+.file-btn:hover { border-color: #42b5ce; }
+.file-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(107, 124, 255, 0.15); border-color: #42b5ce; }
+.file-btn:disabled { opacity: .6; cursor: not-allowed; }
+.filename { font-size: 13px; color: #ddd; }
+.filename.empty { color: #777; font-style: italic; }
+
+/* Visually hide but keep accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Floating label inputs */
+.float {
+  position: relative;
+  display: block;
+}
+
+.float input,
+.float textarea {
+  width: 100%;
+  padding: 14px 12px;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  background: transparent;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.float input::placeholder,
+.float textarea::placeholder {
+  color: transparent; /* hide placeholder */
+}
+
+.float input:focus,
+.float textarea:focus {
+  border-color: #42b5ce;
+  box-shadow: 0 0 0 3px rgba(107, 124, 255, 0.15);
+}
+
+.float .label-text {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #777;
+  background: light-dark(#fff, #0a0f18); /* match page background */
+  padding: 0 6px;
+  pointer-events: none;
+  transition: top .2s ease, transform .2s ease, color .2s ease, font-size .2s ease;
+}
+
+.float:focus-within .label-text,
+.float input:not(:placeholder-shown) ~ .label-text,
+.float textarea:not(:placeholder-shown) ~ .label-text {
+  top: 0;
+  transform: translateY(-50%) scale(0.92);
+  color: #555;
+}
+
+/* Improve textarea vertical alignment */
+.float textarea {
+  + .label-text { top: 20px; }
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Primary action button: Enregistrer */
+.save-btn {
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #48c7e1 0%, #42b5ce 100%);
+  color: #0a0f18;
+  font-weight: normal;
+  cursor: pointer;
+  transition: transform .06s ease, filter .15s ease, box-shadow .2s ease;
+}
+.save-btn:hover { filter: brightness(1.05); }
+.save-btn:active { transform: translateY(1px); }
+.save-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(107, 124, 255, 0.18), 0 6px 16px rgba(66, 181, 206, 0.25); }
+.save-btn:disabled { opacity: .65; cursor: not-allowed; filter: none; box-shadow: none; }
 </style>

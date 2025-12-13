@@ -73,8 +73,8 @@ const route = useRoute()
   }
 }
 .btn {
-  background-color: #181f29;
-  color: #fff;
+  background-color: light-dark(rgba(82, 195, 206, 1), rgba(82, 195, 206, 1));
+  color: light-dark(#000, #000);
   padding: 10px;
   border-radius: 10px;
   text-decoration: none;
