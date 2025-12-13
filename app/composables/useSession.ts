@@ -49,7 +49,7 @@ export function useSession() {
         method: 'post',
         body: {email, username, password},
       })
-      await refresh()
+      // Do not refresh session here; account requires email verification first
       return true
     } catch (err: any) {
       if (err.value) {

@@ -19,6 +19,10 @@ export const users = mysqlTable('users', {
   email: varchar('email', { length: 255 }).notNull(),
   username: varchar('username', { length: 100 }).notNull(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  // Email verification flow
+  emailVerifiedAt: datetime('email_verified_at', { mode: 'date', fsp: 3 }),
+  verificationToken: varchar('verification_token', { length: 255 }),
+  verificationExpiresAt: datetime('verification_expires_at', { mode: 'date', fsp: 3 }),
   createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
   updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 })

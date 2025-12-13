@@ -4,6 +4,7 @@ const password = ref('')
 const { login, error, user } = useSession()
 const router = useRouter()
 const submitting = ref(false)
+const resending = ref(false)
 
 definePageMeta({
   name: 'login'
@@ -24,6 +25,21 @@ async function onSubmit() {
     if (ok) await router.push('/projects')
   } finally {
     submitting.value = false
+  }
+}
+
+async function onResend() {
+  if (!emailOrUsername.value || resending.value) return
+  resending.value = true
+  try {
+    await $fetch('/api/auth/resend', { method: 'post', body: { emailOrUsername: emailOrUsername.value } })
+    // Provide a gentle confirmation in-place
+    error.value = 'Un e‑mail de vérification a été renvoyé (si un compte non vérifié existe).'
+  } catch {
+    // swallow to avoid user enumeration
+    error.value = 'Un e‑mail de vérification a été renvoyé (si un compte non vérifié existe).'
+  } finally {
+    resending.value = false
   }
 }
 </script>
@@ -71,7 +87,17 @@ async function onSubmit() {
         </button>
       </div>
 
-      <p v-if="error" class="error">{{ error }}</p>
+      <div v-if="error" class="error">
+        <p>{{ error }}</p>
+        <button
+          v-if="/vérifier votre e‑mail/i.test(error || '')"
+          type="button"
+          class="save-btn"
+          style="margin-top:8px"
+          :disabled="resending"
+          @click="onResend"
+        >{{ resending ? 'Renvoi…' : 'Renvoyer l’e‑mail de vérification' }}</button>
+      </div>
     </form>
   </div>
 </template>

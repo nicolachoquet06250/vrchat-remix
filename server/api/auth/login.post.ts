@@ -29,6 +29,11 @@ export default defineEventHandler( async (event) => {
       throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
     }
 
+    // Block login if email not verified
+    if (!user.emailVerifiedAt) {
+      throw createError({ statusCode: 401, statusMessage: 'Veuillez vérifier votre e‑mail pour activer votre compte.' })
+    }
+
     const token = await createSessionJwt({ sub: String(user.id), email: user.email, username: user.username })
     setSessionCookie(event, token)
     return { id: user.id, email: user.email, username: user.username }
