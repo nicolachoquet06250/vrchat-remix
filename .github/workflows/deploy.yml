@@ -31,7 +31,7 @@ jobs:
           echo "SMTP_PASS=${{secrets.SMTP_PASS}}" >> .env
           echo "SMTP_SECURE=true" >> .env
           echo "MAIL_FROM=${{secrets.MAIL_FROM}}" >> .env
-          echo "APP_NAME=VRChat Remix" >> .env
+          echo "APP_NAME=${{secrets.APP_NAME}}" >> .env
           echo "APP_URL=${{secrets.APP_URL}}" >> .env
 
       - name: Setup Node.js
@@ -98,7 +98,7 @@ jobs:
           echo "SMTP_PASS=${{secrets.SMTP_PASS}}" >> .env
           echo "SMTP_SECURE=true" >> .env
           echo "MAIL_FROM=${{secrets.MAIL_FROM}}" >> .env
-          echo "APP_NAME=VRChat Remix" >> .env
+          echo "APP_NAME=${{secrets.APP_NAME}}" >> .env
           echo "APP_URL=${{secrets.APP_URL}}" >> .env
 
       - name: Debug artifact contents
@@ -150,27 +150,4 @@ jobs:
           else
             echo "Erreur : ${err}"
           fi
-      # Optional: restart your app (uncomment and adapt one of the options below)
-      # - name: Restart app with PM2 (optional)
-      #   uses: appleboy/ssh-action@v1.2.0
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USER }}
-      #     key: ${{ secrets.SSH_KEY }}
-      #     port: ${{ secrets.SSH_PORT || 22 }}
-      #     script: |
-      #       cd ${{ secrets.REMOTE_PATH }}
-      #       pm2 startOrReload ecosystem.config.cjs --update-env
-      #       pm2 save
 
-      # - name: Restart AlwaysData app (custom command)
-      #   if: ${{ secrets.RESTART_CMD != '' }}
-      #   uses: appleboy/ssh-action@v1.2.0
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USER }}
-      #     key: ${{ secrets.SSH_KEY }}
-      #     port: ${{ secrets.SSH_PORT || 22 }}
-      #     script: |
-      #       cd ${{ secrets.REMOTE_PATH }}
-      #       ${{ secrets.RESTART_CMD }}
