@@ -2,6 +2,9 @@
 const {user} = useSession()
 const router = useRouter()
 const route = useRoute()
+
+const isDev = import.meta.env.VITE_NODE_ENV === 'development'
+const devVignetteLabel = import.meta.env.VITE_NODE_ENV
 </script>
 
 <template>
@@ -38,6 +41,8 @@ const route = useRoute()
     <main style="padding:16px">
       <NuxtPage />
     </main>
+
+    <div v-id="isDev" style="position: absolute; z-index: 1; bottom: 10px; right: 10px; background: darkgreen; color: white; padding: 10px 15px; border-radius: 5px; user-select: none">{{devVignetteLabel}}</div>
   </div>
 </template>
 
