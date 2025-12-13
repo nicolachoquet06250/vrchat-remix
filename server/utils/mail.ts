@@ -23,8 +23,6 @@ function getTransporter() {
   const pass = env.SMTP_PASS
   const secure = String(env.SMTP_SECURE || '').toLowerCase() === 'true' || port === 465
 
-  console.log(host, port, user, pass)
-
   if (!host || !port || !user || !pass) {
     // Lazy no-op transporter to avoid breaking the app if SMTP isn't configured in local dev
     transporter = {
@@ -76,8 +74,6 @@ export async function sendVerificationEmail(to: string, token: string, username?
   const subject = `${appName} – Vérifiez votre adresse e‑mail`
   const html = buildVerificationHtml({ appName, appUrl, logoUrl, username, verifyUrl })
   const text = buildVerificationText({ appName, appUrl, username, verifyUrl })
-
-  // console.log(html, text)
 
   const t = getTransporter()
   return t?.sendMail({ from, to, subject, text, html })
