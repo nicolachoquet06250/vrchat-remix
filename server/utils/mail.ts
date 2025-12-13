@@ -26,6 +26,8 @@ function getTransporter() {
   const pass = env.SMTP_PASS
   const secure = String(env.SMTP_SECURE || '').toLowerCase() === 'true' || port === 465
 
+  console.log(host, port, user, pass, secure)
+
   if (!host || !port || !user || !pass) {
     // Lazy no-op transporter to avoid breaking the app if SMTP isn't configured in local dev
     transporter = {
