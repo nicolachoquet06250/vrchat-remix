@@ -50,7 +50,7 @@ async function onSubmit() {
   }
   submitting.value = true
   try {
-    const ok = await register(email.value, username.value, password.value)
+    const ok = await register(email.value, username.value, password.value, file.value || undefined)
     if (ok) {
       // Avatar upload will be possible after login; keep local-only for now.
       await router.push({ path: '/verify/sent', query: { email: email.value } })

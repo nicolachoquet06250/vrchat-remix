@@ -42,13 +42,26 @@ export function useSession() {
     }
   }
 
-  async function register(email: string, username: string, password: string) {
+  async function register(email: string, username: string, password: string, file?: File) {
     error.value = null
     try {
-      await $fetch('/api/auth/register', {
-        method: 'post',
-        body: {email, username, password},
-      })
+      if (file) {
+        const fd = new FormData()
+        fd.append('email', email)
+        fd.append('username', username)
+        fd.append('password', password)
+        // côté serveur nous attendrons le champ fichier nommé "file" (aligné avec /api/users/avatar)
+        fd.append('file', file)
+        await $fetch('/api/auth/register', {
+          method: 'post',
+          body: fd,
+        })
+      } else {
+        await $fetch('/api/auth/register', {
+          method: 'post',
+          body: {email, username, password},
+        })
+      }
       // Do not refresh session here; account requires email verification first
       return true
     } catch (err: any) {

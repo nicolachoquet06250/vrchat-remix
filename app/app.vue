@@ -104,6 +104,9 @@ const route = useRoute()
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   &:hover, &:focus {
