@@ -92,14 +92,14 @@ jobs:
           echo "DB_NAME=${{secrets.DB_NAME}}" >> build/.env
           echo "DB_CREDENTIALS_URL=mysql://${{secrets.DB_USER}}:${{secrets.DB_PASSWORD}}@${{secrets.DB_HOST}}:${{secrets.DB_PORT}}/${{secrets.DB_NAME}}" >> build/.env
           echo "JWT_SECRET=${{secrets.JWT_SECRET}}" >> build/.env
-          echo "SMTP_HOST=${{secrets.SMTP_HOST}}" >> .env
-          echo "SMTP_PORT=465" >> .env
-          echo "SMTP_USER=${{secrets.SMTP_USER}}" >> .env
-          echo "SMTP_PASS=${{secrets.SMTP_PASS}}" >> .env
-          echo "SMTP_SECURE=true" >> .env
-          echo "MAIL_FROM=${{secrets.MAIL_FROM}}" >> .env
-          echo "APP_NAME=VRChat Remix" >> .env
-          echo "APP_URL=${{secrets.APP_URL}}" >> .env
+          echo "SMTP_HOST=${{secrets.SMTP_HOST}}" >> build/.env
+          echo "SMTP_PORT=465" >> build/.env
+          echo "SMTP_USER=${{secrets.SMTP_USER}}" >> build/.env
+          echo "SMTP_PASS=${{secrets.SMTP_PASS}}" >> build/.env
+          echo "SMTP_SECURE=true" >> build/.env
+          echo "MAIL_FROM=${{secrets.MAIL_FROM}}" >> build/.env
+          echo "APP_NAME=VRChat Remix" >> build/.env
+          echo "APP_URL=${{secrets.APP_URL}}" >> build/.env
 
       - name: Debug artifact contents
         run: |
