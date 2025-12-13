@@ -295,7 +295,15 @@ label { display: grid; gap: 6px; }
 .thumb { position: relative; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
 .thumb img { width: 100%; height: 120px; object-fit: cover; display: block; }
 .thumb-actions { position: absolute; bottom: 6px; right: 6px; }
-.btn { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; background: #f9f9f9; cursor: pointer; }
+.btn:disabled { border: 1px solid light-dark(#ddd, #7bc2db); padding: 6px 10px; border-radius: 6px; background: #f9f9f9; color: light-dark(#000, #7bc2db); }
+.btn:not(:disabled) {
+  border: 1px solid light-dark(#ddd, #7bc2db); padding: 6px 10px; border-radius: 6px; background: #f9f9f9; cursor: pointer; color: light-dark(#000, #7bc2db);
+  transition: background .2s ease, color .2s ease;
+  &:hover {
+    color: light-dark(#000, #fff);
+    background: #7bc2db;
+  }
+}
 .no-images { color: #666; font-size: 13px; }
 
 /* Custom file inputs */

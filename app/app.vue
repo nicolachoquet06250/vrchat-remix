@@ -42,7 +42,7 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
       <NuxtPage />
     </main>
 
-    <div v-if="isDev" style="position: absolute; z-index: 1; bottom: 10px; right: 10px; background: darkgreen; color: white; padding: 10px 15px; border-radius: 5px; user-select: none">{{devVignetteLabel}}</div>
+    <div v-if="isDev" style="position: fixed; z-index: 1; bottom: 10px; right: 10px; background: darkgreen; color: white; padding: 10px 15px; border-radius: 5px; user-select: none">{{devVignetteLabel}}</div>
   </div>
 </template>
 
