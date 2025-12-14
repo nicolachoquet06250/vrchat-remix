@@ -23,6 +23,9 @@ const q = ref<string>((route.query.q as string) || '')
 const tag = ref<string>((route.query.tag as string) || '')
 const page = ref<number>(Number(route.query.page || 1))
 const pageSize = 20
+const mineOnly = ref<boolean>(
+  route.query.mineOnly === 'true' || route.query.mineOnly === '1'
+)
 
 const qd = useDebounce(q, 1000);
 
@@ -30,20 +33,51 @@ const query = computed(() => ({
   q: qd.value || undefined,
   tag: tag.value || undefined,
   page: page.value,
-  pageSize
+  pageSize,
+  mineOnly: mineOnly.value || undefined,
 }));
 
-const { data, pending, refresh } = await useFetch('/api/projects', { query, watch: [qd, tag, page] })
+const { data, pending, refresh } = await useFetch('/api/projects', { query, watch: [qd, tag, page, mineOnly] })
 
 function onSearch() {
   page.value = 1
-  router.replace({ query: { q: q.value || undefined, tag: tag.value || undefined, page: page.value } })
+  router.replace({
+    query: {
+      q: q.value || undefined,
+      tag: tag.value || undefined,
+      page: page.value,
+      // @ts-ignore
+      mineOnly: (mineOnly.value ?? false),
+    }
+  })
   refresh()
 }
 
 function go(p: number) {
   page.value = p
-  router.replace({ query: { q: q.value || undefined, tag: tag.value || undefined, page: page.value } })
+  router.replace({
+    query: {
+      q: q.value || undefined,
+      tag: tag.value || undefined,
+      page: page.value,
+      // @ts-ignore
+      mineOnly: (mineOnly.value ?? false),
+    }
+  })
+}
+
+function toggleMineOnly() {
+  // Réinitialise la pagination et met à jour l'URL
+  page.value = 1
+  router.replace({
+    query: {
+      q: q.value || undefined,
+      tag: tag.value || undefined,
+      page: page.value,
+      // @ts-ignore
+      mineOnly: (mineOnly.value ?? false),
+    },
+  })
 }
 </script>
 
@@ -70,6 +104,18 @@ function go(p: number) {
         </button>
         <input v-model="q" type="search" placeholder="Rechercher un projet" v-if="searchBy === 'project'" />
         <input v-model="tag" type="text" placeholder="Tag (ex: avatar)" v-if="searchBy === 'tag'" />
+      </div>
+
+      <div v-if="user" class="mine-only">
+        <UiSwitch
+          id="mineOnlySwitch"
+          v-model="mineOnly"
+          :label="{
+            before: 'Tous les projets',
+            after: 'Mes projets'
+          }"
+          @update:modelValue="toggleMineOnly"
+        />
       </div>
     </form>
 

@@ -2,12 +2,14 @@ import { and, eq, inArray, like, sql } from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
 import {projects, projectTags, tags, users, projectImages, userAvatars, type Project} from '~~/server/db/schema'
 import { z } from 'zod'
+import { getSession } from '~~/server/utils/auth'
 
 const QuerySchema = z.object({
   q: z.string().max(200).optional(),
   tag: z.string().max(100).optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  mineOnly: z.coerce.boolean().optional().default(false),
 })
 
 type PaginationItem = Project & {
@@ -30,7 +32,7 @@ export default defineEventHandler(async (event): Promise<{
   if (!parsed.success) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid query', data: parsed.error.flatten() })
   }
-  const { q, tag, page, pageSize } = parsed.data
+  const { q, tag, page, pageSize, mineOnly } = parsed.data
   const db = getDb()
 
   // Base filtering
@@ -56,9 +58,19 @@ export default defineEventHandler(async (event): Promise<{
     }
   }
 
+  // Optional filter: only projects of the authenticated user
+  if (mineOnly) {
+    const session = await getSession(event)
+    if (!session) {
+      // if not authenticated, ignore mineOnly and return public results (all)
+    } else {
+      whereClauses.push(eq(projects.userId, Number(session.sub)))
+    }
+  }
+
   const offset = (page - 1) * pageSize
 
-  const totalRows = await db.select({ count: sql<number>`count(*)` }).from(projects).where(
+  const totalRows = await db.select({ count: sql<number>`COUNT(*)` }).from(projects).where(
     whereClauses.length ? and(...whereClauses) : undefined as any,
   )
   const total = Number(totalRows[0]?.count ?? 0)
