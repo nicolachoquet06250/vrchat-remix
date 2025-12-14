@@ -1,15 +1,139 @@
 import vue from '@vitejs/plugin-vue'
+import {VitePWA} from "vite-plugin-pwa";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
+  modules: [
+      '@vite-pwa/nuxt',
+    (_, nuxt) => {
+      // @ts-ignore
+      nuxt.hook('pwa:beforeBuildServiceWorker', options => {
+        console.log('pwa:beforeBuildServiceWorker: ', options.base)
+      })
+    }
+  ],
+
+  // @ts-ignore
+  pwa: {
+    registerType: 'autoUpdate',
+    injectRegister: 'auto',
+    devOptions: {
+      enabled: true
+    },
+    workbox: {
+      clientsClaim: true,
+      skipWaiting: true,
+      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      // cleanupOutdatedCaches: false,
+      // sourcemap: true
+    },
+    // injectManifest: {
+    //   globPatterns: ['**/*.{js,css,html,png,svg,ico}']
+    // },
+    manifest: {
+      name: 'VRC Remix',
+      short_name: 'VRC R.',
+      description: 'équivalent de la fonctionnalité remix de meta pour vrchat',
+      theme_color: '#080f19',
+      icons: [
+        {
+          src: 'pwa-192x192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: 'pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        },
+        {
+          src: 'pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any'
+        },
+        {
+          src: 'pwa-512x512.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
+        }
+      ],
+      start_url: '/projects',
+      display: 'fullscreen',
+      lang: 'fr',
+      categories: ['community', 'creation', 'vrchat'],
+      orientation: 'portrait-primary'
+    }
+  },
+
+  /*vite: {
+    plugins: [
+      VitePWA({
+        registerType: 'autoUpdate',
+        injectRegister: 'auto',
+        devOptions: {
+          enabled: true
+        },
+        workbox: {
+          clientsClaim: true,
+          skipWaiting: true,
+          globPatterns: ['**!/!*.{js,css,html,ico,png,svg}'],
+          cleanupOutdatedCaches: false,
+          sourcemap: true
+        },
+        injectManifest: {
+          globPatterns: ['**!/!*.{js,css,html,png,svg,ico}'],
+        },
+        manifest: {
+          name: 'VRC Remix',
+          short_name: 'VRC R.',
+          description: 'équivalent de la fonctionnalité remix de meta pour vrchat',
+          theme_color: '#080f19',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable'
+            }
+          ],
+          start_url: '/projects',
+          display: 'fullscreen',
+          lang: 'fr',
+          categories: ['community', 'creation', 'vrchat'],
+          orientation: 'portrait-primary'
+        }
+      })
+    ],
+  },*/
+
   // Ensure runtime alias resolution aligns with TypeScript paths
   // Map '~/*' to 'src/*' while keeping explicit shortcuts for existing folders
   alias: {
     '#/*': './*',
     '~/*': './*'
   },
+
   runtimeConfig: {
     // Server-only
     databaseUrl: process.env.DB_CREDENTIALS_URL, // e.g. mysql://user:pass@localhost:3306/vrchat_remix
@@ -22,6 +146,9 @@ export default defineNuxtConfig({
     head: {
       meta: [
         {name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'}
+      ],
+      link: [
+        {rel: 'manifest', href: '/manifest.webmanifest'}
       ]
     }
   },
@@ -29,6 +156,12 @@ export default defineNuxtConfig({
   nitro: {
     rollupConfig: {
       plugins: [vue()]
+    },
+
+    routeRules: {
+      '/manifest.webmanifest': {
+        static: true
+      }
     }
   }
 })

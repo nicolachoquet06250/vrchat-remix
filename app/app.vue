@@ -8,6 +8,8 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
 </script>
 
 <template>
+  <VitePwaManifest />
+
   <div>
     <header class="header">
       <NuxtLink :to="{name: 'root'}">
