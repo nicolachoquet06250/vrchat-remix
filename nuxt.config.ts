@@ -20,6 +20,8 @@ export default defineNuxtConfig({
   pwa: {
     registerType: 'autoUpdate',
     injectRegister: 'auto',
+    // @ts-ignore
+    offlineReady: true,
     devOptions: {
       enabled: true
     },
@@ -27,12 +29,36 @@ export default defineNuxtConfig({
       clientsClaim: true,
       skipWaiting: true,
       globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-      // cleanupOutdatedCaches: false,
-      // sourcemap: true
+      cleanupOutdatedCaches: true,
+      sourcemap: true,
+      runtimeCaching: [
+        {
+          urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api',
+            networkTimeoutSeconds: 3,
+            expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 },
+          },
+        },
+        {
+          urlPattern: ({ request }) => request.destination === 'image',
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'images',
+            expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+          },
+        },
+        {
+          urlPattern: ({ url }) => !url.pathname.startsWith('/api/'),
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'pages',
+            expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+          },
+        },
+      ]
     },
-    // injectManifest: {
-    //   globPatterns: ['**/*.{js,css,html,png,svg,ico}']
-    // },
     manifest: {
       name: 'VRC Remix',
       short_name: 'VRC R.',
@@ -69,63 +95,6 @@ export default defineNuxtConfig({
       orientation: 'portrait-primary'
     }
   },
-
-  /*vite: {
-    plugins: [
-      VitePWA({
-        registerType: 'autoUpdate',
-        injectRegister: 'auto',
-        devOptions: {
-          enabled: true
-        },
-        workbox: {
-          clientsClaim: true,
-          skipWaiting: true,
-          globPatterns: ['**!/!*.{js,css,html,ico,png,svg}'],
-          cleanupOutdatedCaches: false,
-          sourcemap: true
-        },
-        injectManifest: {
-          globPatterns: ['**!/!*.{js,css,html,png,svg,ico}'],
-        },
-        manifest: {
-          name: 'VRC Remix',
-          short_name: 'VRC R.',
-          description: 'équivalent de la fonctionnalité remix de meta pour vrchat',
-          theme_color: '#080f19',
-          icons: [
-            {
-              src: 'pwa-192x192.png',
-              sizes: '192x192',
-              type: 'image/png'
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png'
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: 'pwa-512x512.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable'
-            }
-          ],
-          start_url: '/projects',
-          display: 'fullscreen',
-          lang: 'fr',
-          categories: ['community', 'creation', 'vrchat'],
-          orientation: 'portrait-primary'
-        }
-      })
-    ],
-  },*/
 
   // Ensure runtime alias resolution aligns with TypeScript paths
   // Map '~/*' to 'src/*' while keeping explicit shortcuts for existing folders
