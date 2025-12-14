@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const {user} = useSession()
+const {user, loading} = useSession()
 const router = useRouter()
 const route = useRoute()
 
@@ -24,7 +24,7 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
         Projets
       </a>
 
-      <div>
+      <div v-if="!loading">
         <NuxtLink v-if="user" :to="{name: 'profile'}" class="profile-link">
           <img v-if="user.avatarUrl" :src="user.avatarUrl" alt="Avatar" class="avatar" />
           <div v-else class="avatar placeholder">{{ user.username.slice(0, 1).toUpperCase() }}</div>
