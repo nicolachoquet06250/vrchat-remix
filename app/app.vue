@@ -66,7 +66,7 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
   display: flex;
   gap: 12px;
   padding-right: 12px;
-  border-bottom: 1px solid #eee;
+  /*border-bottom: 1px solid #eee;*/
   align-items: center;
 
   a:focus {

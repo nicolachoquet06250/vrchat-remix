@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer'
 import {render} from '@vue-email/render';
 import SignupConfirmed from '~~/app/mails/SignupConfirmed.vue'
 import Verification from '~~/app/mails/Verification.vue'
+import NewProjectAlert from '~~/app/mails/NewProjectAlert.vue'
 
 type MailEnv = {
   SMTP_HOST?: string
@@ -103,6 +104,37 @@ export async function sendVerificationEmail(to: string, token: string, username?
   });
   // const html = buildVerificationHtml({ appName, appUrl, logoUrl, username, verifyUrl })
   // const text = buildVerificationText({ appName, appUrl, username, verifyUrl })
+
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendNewProjectAlert(to: string, params: { projectId: number, projectName: string, query: string, type: 'project'|'tag' }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRChat Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+  const logoUrl = `${appUrl}/vrchat-remix.png`
+
+  const projectUrl = `${appUrl}/projects/${params.projectId}`
+  const subject = `${appName} – Nouveau projet correspondant à votre alerte`
+  const html = await render(NewProjectAlert, {
+    appUrl,
+    logoUrl,
+    appName,
+    projectUrl,
+    projectName: params.projectName,
+    query: params.query,
+    type: params.type,
+  }, { pretty: true })
+  const text = await render(NewProjectAlert, {
+    appUrl,
+    appName,
+    projectUrl,
+    projectName: params.projectName,
+    query: params.query,
+    type: params.type,
+  }, { plainText: true })
 
   const t = getTransporter()
   return t?.sendMail({ from, to, subject, text, html })

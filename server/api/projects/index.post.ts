@@ -3,6 +3,9 @@ import { getDb } from '~~/server/db/client'
 import { projects, projectImages } from '~~/server/db/schema'
 import { requireAuth } from '~~/server/utils/auth'
 import { getProjectWithTags, setProjectTags } from '~~/server/utils/projects'
+import { savedSearches, users } from '~~/server/db/schema'
+import { sendNewProjectAlert } from '~~/server/utils/mail'
+import {inArray} from "drizzle-orm";
 
 const FieldsSchema = z.object({
   name: z.string().min(3).max(200),
@@ -109,6 +112,53 @@ export default defineEventHandler(async (event) => {
   if (imageInserts.length > 0) {
     const values = imageInserts.map((v) => ({ ...v, projectId: created.id }))
     await db.insert(projectImages).values(values)
+  }
+
+  // Notifications d'alerte de recherche (best effort, sans bloquer la création)
+  try {
+    const project = await getProjectWithTags(created.id)
+    const projNameLc = (project?.name || '').toLowerCase()
+    const projTagsLc = new Set((project?.tags || []).map(t => t.toLowerCase()))
+    // Récupérer toutes les recherches sauvegardées (idéalement filtrer côté SQL si volumétrie)
+    const allAlerts = await db.select().from(savedSearches)
+    // Ne pas notifier l'auteur du projet pour ses propres alertes
+    const matched = allAlerts.filter(a => {
+      if (a.userId === created.userId) return false
+      if (a.type === 'project') return projNameLc.includes(a.query)
+      if (a.type === 'tag') return projTagsLc.has(a.query)
+      return false
+    })
+    if (matched.length) {
+      // Grouper par user
+      const byUser = new Map<number, { type: 'project'|'tag', query: string }[]>()
+      for (const m of matched) {
+        const list = byUser.get(m.userId) || []
+        list.push({ type: m.type as any, query: m.query })
+        byUser.set(m.userId, list)
+      }
+      // Récupérer emails
+      const userIds = Array.from(byUser.keys())
+      if (userIds.length) {
+        const rows = await db.select().from(users).where(inArray(users.id, userIds))
+        const emailMap = new Map(rows.map(r => [r.id, r.email]))
+        for (const [uid, queries] of byUser.entries()) {
+          const to = emailMap.get(uid)
+          if (!to) continue
+          // Envoyer un mail par requête sauvegardée (simple et clair)
+          for (const q of queries) {
+            await sendNewProjectAlert(to, {
+              projectId: created.id,
+              projectName: project?.name || '',
+              query: q.query,
+              type: q.type,
+            })
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // ne pas faire échouer la création si l'envoi mail échoue
+    console.error('search alert notification failed', e)
   }
 
   return await getProjectWithTags(created.id)

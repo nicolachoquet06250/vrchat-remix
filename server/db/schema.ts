@@ -121,6 +121,21 @@ export const userAvatarsRelations = relations(userAvatars, ({ one }) => ({
   })
 }))
 
+// Recherches sauvegardées pour alertes e‑mail
+export const savedSearches = mysqlTable('saved_searches', {
+  id: int('id').autoincrement().primaryKey(),
+  userId: int('user_id').notNull(),
+  // type de recherche: 'project' (par nom) ou 'tag'
+  type: varchar('type', { length: 20 }).notNull(),
+  // valeur recherchée (nom partiel ou tag exact, en minuscules)
+  query: varchar('query', { length: 200 }).notNull(),
+  createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+}, (table) => ({
+  userIdx: index('ss_user_idx').on(table.userId),
+  uniquePerUser: unique('ss_user_type_query_unique').on(table.userId, table.type, table.query),
+}))
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Project = typeof projects.$inferSelect
@@ -130,3 +145,4 @@ export type NewTag = typeof tags.$inferInsert
 export type ProjectImage = typeof projectImages.$inferSelect
 export type NewProjectImage = typeof projectImages.$inferInsert
 export type UserAvatar = typeof userAvatars.$inferSelect
+export type SavedSearch = typeof savedSearches.$inferSelect

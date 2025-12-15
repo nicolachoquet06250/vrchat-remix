@@ -18,7 +18,6 @@ useSeoMeta({
   twitterCard: 'app'
 })
 
-const searchBy = ref<'tag'|'project'>('project');
 const q = ref<string>((route.query.q as string) || '')
 const tag = ref<string>((route.query.tag as string) || '')
 const page = ref<number>(Number(route.query.page || 1))
@@ -38,6 +37,42 @@ const query = computed(() => ({
 }));
 
 const { data, pending, refresh } = await useFetch('/api/projects', { query, watch: [qd, tag, page, mineOnly] })
+
+// Alertes de recherche (sauvegarde par e‑mail)
+const { data: alerts, refresh: refreshAlerts } = await useFetch('/api/search-alerts', { method: 'GET' })
+
+const showAlerts = ref(false)
+const saving = ref(false)
+const saveMsg = ref<string|undefined>()
+const searchTypeBool = ref<boolean>(false)
+const searchBy = computed(() => searchTypeBool.value ? 'project' : 'tag');
+
+async function saveCurrentSearch() {
+  if (!user.value) return
+  const type = searchBy.value
+  const queryVal = (type === 'project' ? q.value : tag.value).trim()
+  if (!queryVal) return
+  saving.value = true
+  saveMsg.value = undefined
+  try {
+    await $fetch('/api/search-alerts', {
+      method: 'POST',
+      body: { type, query: queryVal },
+    })
+    await refreshAlerts()
+    saveMsg.value = 'Alerte enregistrée'
+  } catch (e: any) {
+    saveMsg.value = e?.data?.statusMessage || 'Erreur lors de l’enregistrement'
+  } finally {
+    saving.value = false
+    setTimeout(() => (saveMsg.value = undefined), 2500)
+  }
+}
+
+async function deleteAlert(id: number) {
+  await $fetch(`/api/search-alerts/${id}`, { method: 'DELETE' })
+  await refreshAlerts()
+}
 
 function onSearch() {
   page.value = 1
@@ -89,12 +124,22 @@ function toggleMineOnly() {
   <div class="container">
     <div class="header">
       <h1>Projets</h1>
-      <NuxtLink v-if="user" :to="{name: 'create-project'}" class="btn">Nouveau projet</NuxtLink>
+      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px;">
+        <button v-if="user && (alerts?.length ?? 0) > 0" class="btn no-auto" type="button" @click="showAlerts = true">Mes recherches</button>
+        <NuxtLink v-if="user" :to="{name: 'create-project'}" class="btn">Nouveau projet</NuxtLink>
+      </div>
     </div>
 
     <form class="filters" @submit.prevent="onSearch">
-      <button @click="searchBy='project'" :disabled="searchBy==='project'" class="square-btn">P</button>
-      <button @click="searchBy='tag'" :disabled="searchBy==='tag'" class="square-btn">T</button>
+      <UiSwitch
+          id="searchTypeSwitch"
+          style="margin-right: 20px;"
+          v-model="searchTypeBool"
+          :label="{
+            before: 'Nom',
+            after: 'Tag'
+          }"
+      />
 
       <div class="search-zone">
         <button type="submit">
@@ -104,6 +149,13 @@ function toggleMineOnly() {
         </button>
         <input v-model="q" type="search" placeholder="Rechercher un projet" v-if="searchBy === 'project'" />
         <input v-model="tag" type="text" placeholder="Tag (ex: avatar)" v-if="searchBy === 'tag'" />
+      </div>
+
+      <div v-if="user && ((searchBy==='project' && q) || (searchBy==='tag' && tag))" class="alerts">
+        <button type="button" class="btn" :disabled="saving" @click="saveCurrentSearch">
+          {{ saving ? 'Enregistrement…' : 'Enregistrer cette recherche' }}
+        </button>
+        <span v-if="saveMsg" class="hint">{{ saveMsg }}</span>
       </div>
 
       <div v-if="user" class="mine-only">
@@ -118,6 +170,38 @@ function toggleMineOnly() {
         />
       </div>
     </form>
+
+    <UiModal v-model="showAlerts" title="Mes recherches enregistrées">
+      <template v-if="alerts?.length">
+        <table class="alerts-table">
+          <thead>
+          <tr>
+            <th>Type</th>
+            <th>Recherche</th>
+            <th class="actions">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="a in alerts" :key="a.id">
+            <td>{{ a.type === 'tag' ? 'Tag' : 'Nom' }}</td>
+            <td>{{ a.query }}</td>
+            <td class="actions">
+              <button type="button" class="danger" @click="deleteAlert(a.id)" aria-label="Supprimer cette alerte">
+                <!-- Icône poubelle -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 448 512" aria-hidden="true" focusable="false" style="vertical-align: middle; margin-right: 6px;">
+                  <path fill="currentColor" d="M135.2 17.7C140.6 7.1 151.4 0 163.5 0h121c12.1 0 22.9 7.1 28.3 17.7L328 32H432c8.8 0 16 7.2 16 16s-7.2 16-16 16H16C7.2 64 0 56.8 0 48S7.2 32 16 32H120l15.2-14.3zM32 96H416l-21.2 371.6c-1.8 31.4-27.7 56.4-59.2 56.4H112.4c-31.5 0-57.4-25-59.2-56.4L32 96zm128 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V176c0-8.8-7.2-16-16-16zm128 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V176c0-8.8-7.2-16-16-16z"/>
+                </svg>
+                <span>Supprimer</span>
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </template>
+      <template v-else>
+        <p>Aucune recherche enregistrée pour le moment.</p>
+      </template>
+    </UiModal>
 
     <div v-if="pending">Chargement…</div>
     <div v-else>
@@ -170,7 +254,7 @@ a:focus, button:focus {
   outline: 1px solid light-dark(#0005, #fff5);
 }
 .container { display: grid; gap: 16px; }
-.header { display: flex; align-items: center; gap: 12px; }
+.header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .header .btn {
   margin-left: auto;
   cursor: pointer;
@@ -183,9 +267,14 @@ a:focus, button:focus {
   }
 }
 .btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   background-color: light-dark(#52c3ce, #181f29);
   color: light-dark(#000, #fff);
   padding: 10px;
+  border: none;
   border-radius: 10px;
   text-decoration: none;
   cursor: pointer;
@@ -237,6 +326,7 @@ a:focus, button:focus {
   }
 }
 .search-zone {
+  max-width: 50%;
   border: 1px solid black;
   background-color: light-dark(#fff, #0b141e);
   border-radius: 5px;
@@ -325,4 +415,50 @@ a:focus, button:focus {
   border-left-color .5s ease-in-out;
 }
 .pagination { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 8px; }
+
+/* Tableau des recherches enregistrées (zébré 1 ligne sur 2) */
+.alerts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.alerts-table th,
+.alerts-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid light-dark(#eee, #2a2a2a);
+}
+.alerts-table thead th {
+  color: light-dark(#000, #fff);
+}
+.alerts-table tbody tr:nth-child(even) {
+  background-color: light-dark(#f6f6f6, #121a24);
+}
+.alerts-table tbody tr:hover {
+  background-color: light-dark(#eeeeee, #17233a);
+}
+.alerts-table .actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Bouton danger (cohérent avec le style existant ailleurs) */
+.danger {
+  background: #d9534f;
+  color: #fff;
+  border: 1px solid #d9534f;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.danger:hover {
+  background: #c9302c;
+  border-color: #c9302c;
+}
+.danger:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
 </style>
