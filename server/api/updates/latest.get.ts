@@ -568,6 +568,42 @@ type Pull =   {
   "draft": boolean
 };
 
+type Author = {
+  "login": string,
+  "id": number,
+  "node_id": string,
+  "avatar_url": string,
+  "gravatar_id": string,
+  "url": string,
+  "html_url": string,
+  "followers_url": string,
+  "following_url": string,
+  "gists_url": string,
+  "starred_url": string,
+  "subscriptions_url": string,
+  "organizations_url": string,
+  "repos_url": string,
+  "events_url": string,
+  "received_events_url": string,
+  "type": string,
+  "user_view_type": string,
+  "site_admin": false,
+  "name": string,
+  "company": string,
+  "blog": string,
+  "location": string,
+  "email": string|null,
+  "hireable": string|null,
+  "bio": string,
+  "twitter_username": string|null,
+  "public_repos": number,
+  "public_gists": number,
+  "followers": number,
+  "following": number,
+  "created_at": string,
+  "updated_at": string
+};
+
 export default defineEventHandler(async () => {
   const config = useRuntimeConfig();
   const owner = config.public.githubOwner as string;
@@ -636,6 +672,8 @@ export default defineEventHandler(async () => {
     const merged = commits.find(c => !!c.commit?.message && c.commit.message.startsWith('Merge pull request')) ?? commits[0];
     const commitMessage = merged?.commit?.message ?? null;
 
+    const author = await $fetch<Author>(merged.author.url, { headers });
+
     return {
       ok: true,
       data: {
@@ -644,8 +682,8 @@ export default defineEventHandler(async () => {
         message: commitMessage,
         mergedAt: merged.commit.committer.date,
         htmlUrl: merged.html_url,
-        author: merged.commit.author?.name ?? null,
-        authorAvatar: merged.author?.avatar_url ?? null
+        author: author?.name ?? null,
+        authorAvatar: author?.avatar_url ?? null
       }
     }
   } catch (e: any) {
