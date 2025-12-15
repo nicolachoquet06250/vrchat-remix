@@ -77,9 +77,38 @@ export function useSession() {
     user.value = null
   }
 
+  async function updateProfile(payload: { email?: string; username?: string }) {
+    error.value = null
+    try {
+      const res = await $fetch<{ ok: true; requiresVerification?: boolean }>('/api/users/me', {
+        method: 'patch',
+        body: payload,
+      })
+      await refresh()
+      return res
+    } catch (err: any) {
+      error.value = err.statusMessage || 'Erreur de mise à jour du profil'
+      throw err
+    }
+  }
+
+  async function changePassword(currentPassword: string, newPassword: string, confirmPassword: string) {
+    error.value = null
+    try {
+      await $fetch('/api/users/password', {
+        method: 'post',
+        body: { currentPassword, newPassword, confirmPassword },
+      })
+      return true
+    } catch (err: any) {
+      error.value = err.statusMessage || 'Erreur lors du changement de mot de passe'
+      return false
+    }
+  }
+
   if (process.client && user.value === null && !loading.value) {
     refresh()
   }
 
-  return { user, loading, error, refresh, login, register, logout }
+  return { user, loading, error, refresh, login, register, logout, updateProfile, changePassword }
 }

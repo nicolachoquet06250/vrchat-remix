@@ -1,11 +1,18 @@
 <script setup lang="ts">
-const { user, logout, refresh } = useSession()
+import trackRoute, {type RouteMeta} from '~~/app/middlewares/track-route.global'
+
+const { user, logout, refresh, updateProfile, changePassword, error: sessionError } = useSession()
 const { uploading, error, uploadAvatar } = useAvatar()
-onMounted(() => refresh())
 const router = useRouter()
+const route = useRoute()
+
+const meta = route.meta as RouteMeta;
+
+onMounted(() => refresh())
 
 definePageMeta({
-  name: 'profile'
+  name: 'profile',
+  middleware: [trackRoute]
 })
 
 useSeoMeta({
@@ -20,6 +27,75 @@ const file = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
 const avatarInput = ref<HTMLInputElement | null>(null)
 const filename = computed(() => file.value?.name || '')
+
+// Edition profil (email / pseudo)
+const form = reactive({
+  username: '',
+  email: '',
+})
+const profileSaving = ref(false)
+const profileMessage = ref<string | null>(null)
+const profileError = ref<string | null>(null)
+
+watch(user, (u) => {
+  if (u) {
+    form.username = u.username
+    form.email = u.email
+  }
+}, { immediate: true })
+
+async function onSaveProfile() {
+  if (!user.value) return
+  profileMessage.value = null
+  profileError.value = null
+  profileSaving.value = true
+  try {
+    const res = await updateProfile({ username: form.username, email: form.email })
+    if (res?.requiresVerification) {
+      profileMessage.value = 'Profil mis à jour. Veuillez vérifier votre nouvelle adresse e‑mail via le lien reçu.'
+    } else {
+      profileMessage.value = 'Profil mis à jour.'
+    }
+  } catch (e: any) {
+    profileError.value = e?.statusMessage || sessionError.value || 'Erreur lors de la mise à jour du profil'
+  } finally {
+    profileSaving.value = false
+  }
+}
+
+// Changement de mot de passe
+const pwd = reactive({ current: '', next: '', confirm: '' })
+const pwdSaving = ref(false)
+const pwdMessage = ref<string | null>(null)
+const pwdError = ref<string | null>(null)
+
+async function onChangePassword() {
+  pwdMessage.value = null
+  pwdError.value = null
+  if (!pwd.current || !pwd.next || !pwd.confirm) {
+    pwdError.value = 'Veuillez remplir tous les champs.'
+    return
+  }
+  if (pwd.next.length < 8) {
+    pwdError.value = 'Le nouveau mot de passe doit faire au moins 8 caractères.'
+    return
+  }
+  if (pwd.next !== pwd.confirm) {
+    pwdError.value = 'La confirmation ne correspond pas.'
+    return
+  }
+  pwdSaving.value = true
+  const ok = await changePassword(pwd.current, pwd.next, pwd.confirm)
+  pwdSaving.value = false
+  if (ok) {
+    pwdMessage.value = 'Mot de passe modifié avec succès.'
+    pwd.current = ''
+    pwd.next = ''
+    pwd.confirm = ''
+  } else {
+    pwdError.value = sessionError.value || 'Impossible de changer le mot de passe.'
+  }
+}
 
 watch(file, (f) => {
   if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
@@ -73,6 +149,27 @@ function openFilePicker() {
     </div>
 
     <div v-if="user" class="form">
+      <div class="actions">
+        <NuxtLink class="link" :to="{
+          name: meta.previousRoute?.name ?? 'root',
+          params: meta.previousRoute?.params ?? {},
+          query: meta.previousRoute?.query ?? {}
+        }">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+            <path d="M201.4 297.4C188.9 309.9 188.9 330.2 201.4 342.7L361.4 502.7C373.9 515.2 394.2 515.2 406.7 502.7C419.2 490.2 419.2 469.9 406.7 457.4L269.3 320L406.6 182.6C419.1 170.1 419.1 149.8 406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3L201.3 297.3z"/>
+          </svg> Retour
+        </NuxtLink>
+        <button class="danger" @click="onLogout">Se déconnecter</button>
+      </div>
+
+      <section class="info">
+        <div class="info-row">
+          <span class="muted">Inscription</span>
+          <span>{{ new Date(user.createdAt).toLocaleString() }}</span>
+        </div>
+      </section>
+
       <section class="profile-card">
         <div class="avatar-block">
           <div class="avatar-wrap">
@@ -109,14 +206,68 @@ function openFilePicker() {
         </div>
       </section>
 
-      <section class="info">
-        <div class="info-row"><span class="muted">Pseudo</span><span>{{ user.username }}</span></div>
-        <div class="info-row"><span class="muted">Email</span><span>{{ user.email }}</span></div>
-        <div class="info-row"><span class="muted">Inscription</span><span>{{ new Date(user.createdAt).toLocaleString() }}</span></div>
+      <section class="profile-edit">
+        <h2>Informations du profil</h2>
+        <div class="btn" style="border-color: darkorange; background-color: transparent; cursor: default;">
+          ⚠️ Si vous mettez à jour votre email, vous devrez re passer par une phase de validation de celui-ci ⚠️
+        </div>
+        <div class="grid">
+          <label class="field">
+            <span class="label">Pseudo</span>
+            <input v-model="form.username" type="text" class="input" placeholder="Votre pseudo" />
+          </label>
+          <label class="field">
+            <span class="label">Email</span>
+            <input v-model="form.email" type="email" class="input" placeholder="Votre e‑mail" />
+          </label>
+        </div>
+        <div class="row">
+          <button class="btn" :disabled="profileSaving" @click="onSaveProfile">
+            {{ profileSaving ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+          <span class="status ok" v-if="profileMessage">{{ profileMessage }}</span>
+          <span class="status err" v-if="profileError">{{ profileError }}</span>
+        </div>
       </section>
 
-      <div class="actions">
-        <NuxtLink class="link" to="/projects">Retour</NuxtLink>
+      <section class="password-edit">
+        <h2>Changer le mot de passe</h2>
+        <div class="grid full">
+          <label class="field">
+            <span class="label">Mot de passe actuel</span>
+            <input v-model="pwd.current" type="password" class="input" placeholder="Actuel" />
+          </label>
+        </div>
+        <div class="grid">
+          <label class="field">
+            <span class="label">Nouveau mot de passe</span>
+            <input v-model="pwd.next" type="password" class="input" placeholder="Nouveau" />
+          </label>
+          <label class="field">
+            <span class="label">Confirmer le nouveau</span>
+            <input v-model="pwd.confirm" type="password" class="input" placeholder="Confirmer" />
+          </label>
+        </div>
+        <div class="row">
+          <button class="btn" :disabled="pwdSaving" @click="onChangePassword">
+            {{ pwdSaving ? 'Changement…' : 'Changer le mot de passe' }}
+          </button>
+          <span class="status ok" v-if="pwdMessage">{{ pwdMessage }}</span>
+          <span class="status err" v-if="pwdError">{{ pwdError }}</span>
+        </div>
+      </section>
+
+      <div class="actions" style="margin-bottom: 20px;">
+        <NuxtLink class="link" :to="{
+          name: meta.previousRoute?.name ?? 'root',
+          params: meta.previousRoute?.params ?? {},
+          query: meta.previousRoute?.query ?? {}
+        }">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+            <path d="M201.4 297.4C188.9 309.9 188.9 330.2 201.4 342.7L361.4 502.7C373.9 515.2 394.2 515.2 406.7 502.7C419.2 490.2 419.2 469.9 406.7 457.4L269.3 320L406.6 182.6C419.1 170.1 419.1 149.8 406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3L201.3 297.3z"/>
+          </svg> Retour
+        </NuxtLink>
         <button class="danger" @click="onLogout">Se déconnecter</button>
       </div>
     </div>
@@ -132,8 +283,9 @@ function openFilePicker() {
 
 /* Form layout (align with project edit page) */
 .form { display: grid; gap: 16px; }
-.actions { display: flex; gap: 8px; align-items: center; }
-.link { margin-left: auto; text-decoration: none; color: light-dark(#000, #fff); }
+.actions { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.link { text-decoration: none; color: light-dark(#000, #fff); display: inline-flex; align-items: center; gap: 6px; }
+svg > path { fill: light-dark(#000, #fff); }
 .danger { background: #d9534f; color: #fff; border: 1px solid #d9534f; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
 .btn:disabled { border: 1px solid #ddd; padding: 6px 10px; border-radius: 6px; background: #f9f9f9; color: #000; }
 .btn:not(:disabled) { border: 1px solid light-dark(#000, #ddd); padding: 6px 10px; border-radius: 6px; background: light-dark(#42b5ce, #42b5ce); cursor: pointer; color: light-dark(#000, #fff); }
@@ -181,4 +333,19 @@ function openFilePicker() {
 .info { border: 1px solid #eee; border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
 .info-row { display: flex; justify-content: space-between; gap: 12px; }
 .muted { color: #bbb; }
+
+/* Profile edit */
+.profile-edit, .password-edit { border: 1px solid #eee; border-radius: 8px; padding: 16px; display: grid; gap: 12px; }
+.profile-edit h2, .password-edit h2 { margin: 0 0 8px 0; font-size: 16px; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.grid.full { display: flex; > label { flex: 1; } }
+@media (min-width: 640px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+.field { display: grid; gap: 6px; }
+.label { font-size: 13px; color: #999; }
+.input { padding: 10px 12px; border: 1px solid #cfcfcf; border-radius: 8px; background: transparent; color: inherit; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.status.ok { color: #2e7d32; }
+.status.err { color: #b00020; }
 </style>
