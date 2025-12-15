@@ -23,6 +23,9 @@ export const users = mysqlTable('users', {
   emailVerifiedAt: datetime('email_verified_at', { mode: 'date', fsp: 3 }),
   verificationToken: varchar('verification_token', { length: 255 }),
   verificationExpiresAt: datetime('verification_expires_at', { mode: 'date', fsp: 3 }),
+  // Password reset flow
+  resetToken: varchar('reset_token', { length: 255 }),
+  resetExpiresAt: datetime('reset_expires_at', { mode: 'date', fsp: 3 }),
   createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
   updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 })

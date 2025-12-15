@@ -3,6 +3,7 @@ import {render} from '@vue-email/render';
 import SignupConfirmed from '~~/app/mails/SignupConfirmed.vue'
 import Verification from '~~/app/mails/Verification.vue'
 import NewProjectAlert from '~~/app/mails/NewProjectAlert.vue'
+import PasswordReset from '~~/app/mails/PasswordReset.vue'
 
 type MailEnv = {
   SMTP_HOST?: string
@@ -163,6 +164,30 @@ export async function sendVerifiedConfirmation(to: string, username?: string) {
 
   // const html = buildEmailVerifiedHtml({ appName, appUrl, logoUrl, username })
   // const text = buildEmailVerifiedText({ appName, appUrl, username })
+
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendPasswordResetEmail(to: string, token: string, username?: string) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+  const logoUrl = `${appUrl}/vrchat-remix.png`
+
+  const resetUrl = `${appUrl}/reset-password?token=${encodeURIComponent(token)}`
+
+  const subject = `${appName} – Réinitialisation de votre mot de passe`
+  const html = await render(PasswordReset, {
+    appUrl, username,
+    logoUrl, resetUrl,
+    appName
+  }, { pretty: true })
+  const text = await render(PasswordReset, {
+    appUrl, username,
+    resetUrl, appName
+  }, { plainText: true })
 
   const t = getTransporter()
   return t?.sendMail({ from, to, subject, text, html })

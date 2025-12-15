@@ -80,6 +80,10 @@ async function onResend() {
         <span class="label-text">Mot de passe</span>
       </label>
 
+      <div>
+        <NuxtLink class="link" to="/forgot-password">Mot de passe oublié ?</NuxtLink>
+      </div>
+
       <div class="actions">
         <NuxtLink class="link" to="/register">Créer un compte</NuxtLink>
         <button type="submit" class="save-btn" :disabled="submitting">
