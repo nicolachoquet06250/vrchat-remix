@@ -23,6 +23,7 @@ const error = ref<string | null>(null)
 const saving = ref(false)
 const imageFiles = ref<File[]>([])
 const previews = ref<string[]>([])
+const isPublic = ref<boolean>(false)
 
 // Template refs for custom-styled file inputs
 const zipInput = ref<HTMLInputElement | null>(null)
@@ -118,7 +119,17 @@ async function onSubmit() {
   </Head>
 
   <div class="container">
-    <h1>Nouveau projet</h1>
+    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+      <h1>Nouveau projet</h1>
+
+      <UiSwitch
+        v-model="isPublic"
+        :label="{
+          before: 'Privé',
+          after: 'Publique'
+        }"
+      />
+    </div>
     <div v-if="!user">Vous devez être connecté pour créer un projet.</div>
     <form v-else class="form" @submit.prevent="onSubmit">
       <label class="float">

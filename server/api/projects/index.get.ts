@@ -58,14 +58,19 @@ export default defineEventHandler(async (event): Promise<{
     }
   }
 
-  // Optional filter: only projects of the authenticated user
+  // Visibility & ownership
   if (mineOnly) {
     const session = await getSession(event)
-    if (!session) {
-      // if not authenticated, ignore mineOnly and return public results (all)
-    } else {
+    if (session) {
+      // Only my projects (public and private)
       whereClauses.push(eq(projects.userId, Number(session.sub)))
+    } else {
+      // Not authenticated: fall back to public listing
+      whereClauses.push(eq(projects.isPublic, 1 as any))
     }
+  } else {
+    // Public listing/search only
+    whereClauses.push(eq(projects.isPublic, 1 as any))
   }
 
   const offset = (page - 1) * pageSize

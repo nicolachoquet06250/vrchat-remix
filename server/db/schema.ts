@@ -41,6 +41,8 @@ export const projects = mysqlTable('projects', {
   name: varchar('name', { length: 200 })
       .notNull(),
   description: text('description'),
+  // Visibilité publique/privée
+  isPublic: int('is_public').notNull().default(1),
   // Nouveau stockage fichier (zip) en base
   fileName: varchar('file_name', { length: 255 }),
   fileType: varchar('file_type', { length: 100 }),

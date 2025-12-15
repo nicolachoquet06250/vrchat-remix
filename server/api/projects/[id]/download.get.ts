@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { getDb } from '~~/server/db/client'
+import { getSession } from '~~/server/utils/auth'
 
 const ParamsSchema = z.object({ id: z.coerce.number().int().min(1) })
 
@@ -13,6 +14,12 @@ export default defineEventHandler(async (event) => {
   const db = getDb()
   const proj = await db.query.projects.findFirst({ where: (p, { eq }) => eq(p.id, id) })
   if (!proj) throw createError({ statusCode: 404, statusMessage: 'Project not found' })
+  if (!(proj as any).isPublic) {
+    const session = await getSession(event)
+    if (!session || Number(session.sub) !== (proj as any).userId) {
+      throw createError({ statusCode: 404, statusMessage: 'Project not found' })
+    }
+  }
   const anyProj: any = proj
   if (!anyProj.fileData || !anyProj.fileSize) {
     throw createError({ statusCode: 404, statusMessage: 'No file available' })

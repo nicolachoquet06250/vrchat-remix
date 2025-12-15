@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { getDb } from '~~/server/db/client'
-import { projectImages } from '~~/server/db/schema'
-import {eq} from "drizzle-orm";
+import {projectImages, projects} from '~~/server/db/schema'
+import { eq } from 'drizzle-orm'
+import { getSession } from '~~/server/utils/auth'
 
 const ParamsSchema = z.object({ id: z.coerce.number().int().min(1) })
 
@@ -13,6 +14,15 @@ export default defineEventHandler(async (event) => {
   }
   const id = parsed.data.id
   const db = getDb()
+  // Access control: only public projects or the owner can list images
+  const proj = await db.query.projects.findFirst({ where: eq(projects.id, id) })
+  if (!proj) throw createError({ statusCode: 404, statusMessage: 'Project not found' })
+  if (!(proj as any).isPublic) {
+    const session = await getSession(event)
+    if (!session || Number(session.sub) !== (proj as any).userId) {
+      throw createError({ statusCode: 404, statusMessage: 'Project not found' })
+    }
+  }
   const rows = await db
     .select({ id: projectImages.id, fileName: projectImages.fileName, fileType: projectImages.fileType, fileSize: projectImages.fileSize, createdAt: projectImages.createdAt })
     .from(projectImages)

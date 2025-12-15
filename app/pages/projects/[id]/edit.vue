@@ -33,6 +33,7 @@ const form = reactive({
   name: '',
   description: '',
   tags: '', // comma-separated
+  isPublic: false
 })
 const file = ref<File | null>(null)
 const images = ref<Array<{id:number,fileName:string,fileType:string,fileSize:number,createdAt:string}>>([])
@@ -44,10 +45,12 @@ const imagesInput = ref<HTMLInputElement | null>(null)
 
 watchEffect(() => {
   const p = (data.value as any)
+  console.log(p)
   if (!p) return
   form.name = p.name || ''
   form.description = p.description || ''
   form.tags = (p.tags || []).join(', ')
+  form.isPublic = p.isPublic
 })
 
 const saving = ref(false)
@@ -67,6 +70,7 @@ async function onSave() {
     fd.set('name', form.name)
     fd.set('description', form.description || '')
     fd.set('tags', tags || '')
+    fd.set('isPublic', form.isPublic ? 'true' : 'false')
     if (file.value) {
       if (!file.value.name.toLowerCase().endsWith('.zip')) {
         errMsg.value = 'Le fichier doit être un .zip'
@@ -195,7 +199,17 @@ async function onDeleteImage(imageId: number) {
   </Head>
 
   <div class="container">
-    <h1>Modifier le projet</h1>
+    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+      <h1>Modifier le projet</h1>
+
+      <UiSwitch
+          v-model="form.isPublic"
+          :label="{
+          before: 'Privé',
+          after: 'Publique'
+        }"
+      />
+    </div>
     <div v-if="pending">Chargement…</div>
     <div v-else-if="error">Introuvable</div>
     <div v-else-if="!isOwner">Accès refusé</div>

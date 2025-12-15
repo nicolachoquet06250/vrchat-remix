@@ -3,6 +3,7 @@ import sharp from 'sharp'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { getDb } from '~~/server/db/client'
+import { getSession } from '~~/server/utils/auth'
 
 const QuerySchema = z.object({ id: z.coerce.number().int().min(1) })
 
@@ -26,6 +27,15 @@ export default defineEventHandler(async (event) => {
   const db = getDb()
   const row = await db.query.projectImages.findFirst({ where: (pi, { eq }) => eq(pi.id, imageId) })
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Image not found' })
+  // Access control: ensure parent project is public or requester is owner
+  const proj = await db.query.projects.findFirst({ where: (p, { eq }) => eq(p.id, row.projectId) })
+  if (!proj) throw createError({ statusCode: 404, statusMessage: 'Project not found' })
+  if (!(proj as any).isPublic) {
+    const session = await getSession(event)
+    if (!session || Number(session.sub) !== (proj as any).userId) {
+      throw createError({ statusCode: 404, statusMessage: 'Image not found' })
+    }
+  }
   const data = (row as any).fileData as Buffer | null
   if (!data) throw createError({ statusCode: 404, statusMessage: 'Image data missing' })
 

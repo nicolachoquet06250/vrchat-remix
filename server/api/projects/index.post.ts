@@ -12,6 +12,7 @@ const FieldsSchema = z.object({
   description: z.string().max(5000).optional(),
   // comma-separated tags provided via text field
   tags: z.string().optional(),
+  isPublic: z.union([z.literal('true'), z.literal('false')]).optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -48,6 +49,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid fields', data: parsed.error.flatten() })
   }
   const { name, description, tags } = parsed.data
+  const isPublic = parsed.data.isPublic ? parsed.data.isPublic === 'true' : true
 
   if (!filePart) {
     throw createError({ statusCode: 400, statusMessage: 'Le fichier zip est requis' })
@@ -88,6 +90,7 @@ export default defineEventHandler(async (event) => {
     userId: Number(session.sub),
     name,
     description,
+    isPublic: isPublic ? 1 : 0,
     fileName: filename,
     fileType: 'application/zip',
     fileSize: (filePart.data as any).length,
@@ -114,8 +117,11 @@ export default defineEventHandler(async (event) => {
     await db.insert(projectImages).values(values)
   }
 
-  // Notifications d'alerte de recherche (best effort, sans bloquer la création)
+  // Notifications d'alerte de recherche uniquement si le projet est public
   try {
+    if (!created.isPublic) {
+      return await getProjectWithTags(created.id)
+    }
     const project = await getProjectWithTags(created.id)
     const projNameLc = (project?.name || '').toLowerCase()
     const projTagsLc = new Set((project?.tags || []).map(t => t.toLowerCase()))
