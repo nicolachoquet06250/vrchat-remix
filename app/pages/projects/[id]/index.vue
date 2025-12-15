@@ -90,17 +90,20 @@ async function toggleFavorite() {
 
       <div class="meta">
         <span class="creator">
-          <template v-if="data!.creatorHasAvatar && data!.creatorAvatarUrl">
-            <img
-              class="avatar"
-              :src="data!.creatorAvatarUrl"
-              :alt="`Avatar de ${data!.creatorUsername || 'utilisateur'}`"
-            />
-          </template>
-          <template v-else>
-            <span class="avatar placeholder">{{ (data!.creatorUsername || ('#'+data!.userId)).charAt(0).toUpperCase() }}</span>
-          </template>
-          <span class="username">{{ data!.creatorUsername || ('#'+data!.userId) }}</span>
+          <NuxtLink :to="{name: 'creator', params: {id: data!.userId}}" style="text-decoration: underline; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
+            <template v-if="data!.creatorHasAvatar && data!.creatorAvatarUrl">
+              <img
+                class="avatar"
+                :src="data!.creatorAvatarUrl"
+                :alt="`Avatar de ${data!.creatorUsername || 'utilisateur'}`"
+              />
+            </template>
+            <template v-else>
+              <span class="avatar placeholder">{{ (data!.creatorUsername || ('#'+data!.userId)).charAt(0).toUpperCase() }}</span>
+            </template>
+
+            <span class="username">{{ data!.creatorUsername || ('#'+data!.userId) }}</span>
+          </NuxtLink>
         </span>
         • {{ new Date(data!.createdAt).toLocaleString() }}
       </div>

@@ -140,7 +140,7 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
   </Head>
 
   <div class="container">
-    <div class="header">
+    <div class="header" style="flex-wrap: wrap;">
       <h1>Projets</h1>
       <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px;">
         <button v-if="user && (alerts?.length ?? 0) > 0" class="btn no-auto" type="button" @click="showAlerts = true">Mes recherches</button>
@@ -243,14 +243,18 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 
             <div class="meta">
               <span class="creator">
-                <template v-if="p.creatorHasAvatar && p.creatorAvatarUrl">
-                  <img class="avatar" :src="p.creatorAvatarUrl" :alt="`Avatar de ${p.creatorUsername || 'utilisateur'}`" />
-                </template>
-                <template v-else>
-                  <span class="avatar placeholder">{{ (p.creatorUsername || '#'+p.userId).charAt(0).toUpperCase() }}</span>
-                </template>
+                <NuxtLink :to="{name: 'creator', params: {id: p.userId}}" style="text-decoration: underline; text-underline-offset: 4px; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
+                  <template v-if="p.creatorHasAvatar && p.creatorAvatarUrl">
+                    <img class="avatar" :src="p.creatorAvatarUrl" :alt="`Avatar de ${p.creatorUsername || 'utilisateur'}`" />
+                  </template>
+                  <template v-else>
+                    <span class="avatar placeholder">
+                      {{ (p.creatorUsername || '#'+p.userId).charAt(0).toUpperCase() }}
+                    </span>
+                  </template>
 
-                <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
+                  <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
+                </NuxtLink>
               </span>
               • {{ new Date(p.createdAt).toLocaleDateString() }}
             </div>
