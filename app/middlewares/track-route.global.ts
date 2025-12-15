@@ -9,8 +9,6 @@ export interface RouteMeta {
 }
 
 export default defineNuxtRouteMiddleware((to, from) => {
-    console.log('Route précédente :', from.fullPath)
-    console.log('Route actuelle :', to.fullPath)
     to.meta.previousRoute = {
         name: from.name,
         path: from.path,
