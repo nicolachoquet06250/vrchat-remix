@@ -45,7 +45,6 @@ const imagesInput = ref<HTMLInputElement | null>(null)
 
 watchEffect(() => {
   const p = (data.value as any)
-  console.log(p)
   if (!p) return
   form.name = p.name || ''
   form.description = p.description || ''
