@@ -45,7 +45,7 @@ const showAlerts = ref(false)
 const saving = ref(false)
 const saveMsg = ref<string|undefined>()
 const searchTypeBool = ref<boolean>(false)
-const searchBy = computed(() => searchTypeBool.value ? 'project' : 'tag');
+const searchBy = computed(() => searchTypeBool.value ? 'tag' : 'project');
 
 async function saveCurrentSearch() {
   if (!user.value) return
