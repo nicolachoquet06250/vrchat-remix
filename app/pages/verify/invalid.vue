@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ name: 'verify-invalid' })
 useSeoMeta({
-  ogTitle: 'Lien invalide ou expiré',
+  ogTitle: 'VRC Remix - Lien invalide ou expiré',
   ogImage: '/vrchat-remix.png',
   description: 'Le lien de vérification est invalide ou a expiré.',
   ogDescription: 'Le lien de vérification est invalide ou a expiré.',

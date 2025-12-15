@@ -1,8 +1,10 @@
 <script setup lang="ts">
-const emailOrUsername = ref('')
-const password = ref('')
 const { login, error, user } = useSession()
 const router = useRouter()
+const route = useRoute()
+
+const emailOrUsername = ref('')
+const password = ref('')
 const submitting = ref(false)
 const resending = ref(false)
 
@@ -11,7 +13,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  ogTitle: 'Se connecter',
+  ogTitle: 'VRC Remix - Se connecter',
   ogImage: '/vrchat-remix.png',
   description: 'se connecter',
   ogDescription: 'se connecter',
@@ -22,7 +24,13 @@ async function onSubmit() {
   submitting.value = true
   try {
     const ok = await login(emailOrUsername.value, password.value)
-    if (ok) await router.push('/projects')
+    if (ok) {
+      if (route.query.next) {
+        await router.push(route.query.next as string);
+        return;
+      }
+      await router.push('/projects');
+    }
   } finally {
     submitting.value = false
   }

@@ -2,7 +2,7 @@
 definePageMeta({ name: 'forgot-password' })
 
 useSeoMeta({
-  title: 'Mot de passe oublié',
+  title: 'VRC Remix - Mot de passe oublié',
   description: 'Recevez un lien pour réinitialiser votre mot de passe',
 })
 

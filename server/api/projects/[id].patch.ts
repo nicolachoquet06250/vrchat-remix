@@ -3,7 +3,8 @@ import { getDb } from '~~/server/db/client'
 import { projects, savedSearches, users } from '~~/server/db/schema'
 import { ensureProjectOwner, getProjectWithTags, setProjectTags } from '~~/server/utils/projects'
 import { eq, inArray } from 'drizzle-orm'
-import { sendNewProjectAlert } from '~~/server/utils/mail'
+import { sendNewProjectAlert, sendProjectUpdatedEmail } from '~~/server/utils/mail'
+import { projectFavorites } from '~~/server/db/schema'
 
 const FieldsSchema = z.object({
   name: z.string().min(3).max(200).optional(),
@@ -57,7 +58,7 @@ export default defineEventHandler(async (event) => {
       if (typeof provided !== 'undefined') {
         const becamePublic = provided === 'true'
         const wasPrivate = (before as any)?.isPublic ? (before as any).isPublic === 0 : false
-        if (becamePublic && wasPrivate === false) {
+        if (becamePublic && !wasPrivate) {
           // If we can't reliably detect, still proceed to send alerts when provided=true.
         }
       }
@@ -114,6 +115,26 @@ export default defineEventHandler(async (event) => {
 
   const updated = await getProjectWithTags(id)
   if (!updated) throw createError({ statusCode: 404, statusMessage: 'Project not found' })
+  // Notify favorites subscribers about any update
+  try {
+    const favs = await db.select().from(projectFavorites).where(eq(projectFavorites.projectId, id))
+    if (favs.length) {
+      const subscriberIds = favs.map(f => f.userId).filter(uid => uid !== (current as any).userId)
+      if (subscriberIds.length) {
+        const rows = await db.select({ id: users.id, username: users.username, email: users.email })
+            .from(users).where(inArray(users.id, subscriberIds))
+        for (const r of rows) {
+          await sendProjectUpdatedEmail(r.email, {
+            projectId: id,
+            projectName: updated.name,
+            username: rows[0]?.username
+          })
+        }
+      }
+    }
+  } catch (e) {
+    console.error('favorites update notification failed', e)
+  }
   // Send alerts only if becoming public now (private -> public)
   try {
     const becamePublic = (values.isPublic ?? (current as any).isPublic) === 1

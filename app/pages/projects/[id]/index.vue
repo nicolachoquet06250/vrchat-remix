@@ -7,7 +7,7 @@ const id = Number(route.params.id)
 const { user } = useSession()
 const { ucFirst } = useHelpers()
 
-const { data, pending, error } = await useFetch(`/api/projects/${id}`)
+const { data, pending, error, refresh } = await useFetch(`/api/projects/${id}`)
 
 // images for carousel
 const { data: images } = await useFetch(`/api/projects/${id}/images`)
@@ -48,6 +48,29 @@ const isOwner = computed(() => {
   if (!user.value || !data.value) return false
   return user.value.id === data.value!.userId
 })
+
+const toggling = ref(false)
+const favMsg = ref<string | null>(null)
+const isFavorite = computed(() => Boolean(data.value && (data.value as any).isFavorite))
+
+async function toggleFavorite() {
+  if (!user.value || !data.value) return
+  toggling.value = true
+  favMsg.value = null
+  try {
+    if (isFavorite.value) {
+      await $fetch(`/api/projects/${id}/favorite`, { method: 'DELETE' })
+    } else {
+      await $fetch(`/api/projects/${id}/favorite`, { method: 'POST' })
+    }
+    await refresh()
+  } catch (e: any) {
+    favMsg.value = e?.data?.statusMessage || 'Action impossible pour le moment'
+    setTimeout(() => (favMsg.value = null), 2500)
+  } finally {
+    toggling.value = false
+  }
+}
 </script>
 
 <template>
@@ -93,6 +116,18 @@ const isOwner = computed(() => {
       </div>
       <div class="actions">
         <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">Télécharger</a>
+        <button
+          v-if="user && data"
+          class="btn"
+          :disabled="toggling"
+          type="button"
+          @click="toggleFavorite"
+          :aria-pressed="isFavorite"
+        >
+          <template v-if="isFavorite">★ Retirer des favoris</template>
+          <template v-else>☆ Ajouter aux favoris</template>
+        </button>
+        <span v-if="favMsg" class="hint error">{{ favMsg }}</span>
       </div>
 
       <template v-if="hasImages">

@@ -8,7 +8,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  ogTitle: 'Créer un projet',
+  ogTitle: 'VRC Remix - Créer un projet',
   ogImage: '/vrchat-remix.png',
   description: 'créer un nouveau projet remix',
   ogDescription: 'créer un nouveau projet remix',

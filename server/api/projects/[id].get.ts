@@ -2,8 +2,8 @@ import { z } from 'zod'
 import { getProjectWithTags } from '~~/server/utils/projects'
 import { getDb } from '~~/server/db/client'
 import { getSession } from '~~/server/utils/auth'
-import {eq} from "drizzle-orm";
-import {projects} from "~~/server/db/schema";
+import { and, eq } from 'drizzle-orm'
+import { projectFavorites, projects } from '~~/server/db/schema'
 
 const ParamsSchema = z.object({ id: z.coerce.number().int().min(1) })
 
@@ -26,5 +26,14 @@ export default defineEventHandler(async (event) => {
   }
   const proj = await getProjectWithTags(id)
   if (!proj) throw createError({ statusCode: 404, statusMessage: 'Project not found' })
-  return proj
+  // Add isFavorite for current user
+  const session = await getSession(event)
+  let isFavorite = false
+  if (session) {
+    const fav = await db.query.projectFavorites.findFirst({
+      where: (pf, { and, eq }) => and(eq(pf.userId, Number(session.sub)), eq(pf.projectId, id)),
+    })
+    isFavorite = !!fav
+  }
+  return { ...proj, isFavorite }
 })

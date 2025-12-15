@@ -13,6 +13,7 @@ definePageMeta({
 })
 
 useSeoMeta({
+  title: `VRC Remix - S'inscrire`,
   ogTitle: `S'inscrire`,
   ogImage: '/vrchat-remix.png',
   description: computed(() => `page d'inscription`),

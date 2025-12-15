@@ -2,7 +2,7 @@
 definePageMeta({ name: 'reset-password' })
 
 useSeoMeta({
-  title: 'Réinitialiser le mot de passe',
+  title: 'VRC Remix - Réinitialiser le mot de passe',
   description: 'Définissez un nouveau mot de passe pour votre compte',
 })
 

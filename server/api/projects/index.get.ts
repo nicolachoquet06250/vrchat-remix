@@ -1,6 +1,6 @@
 import { and, eq, inArray, like, sql } from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
-import {projects, projectTags, tags, users, projectImages, userAvatars, type Project} from '~~/server/db/schema'
+import {projects, projectTags, tags, users, projectImages, userAvatars, projectFavorites, type Project} from '~~/server/db/schema'
 import { z } from 'zod'
 import { getSession } from '~~/server/utils/auth'
 
@@ -19,6 +19,7 @@ type PaginationItem = Project & {
   creatorUsername?: string
   creatorHasAvatar?: boolean
   creatorAvatarUrl?: string | null
+  isFavorite?: boolean
 };
 
 export default defineEventHandler(async (event): Promise<{
@@ -92,6 +93,7 @@ export default defineEventHandler(async (event): Promise<{
   let coverByProject = new Map<number, number>()
   let usernameByUserId = new Map<number, string>()
   let hasAvatarByUserId = new Map<number, boolean>()
+  let favoriteSet = new Set<number>()
   if (ids.length) {
     const pts = await db.select().from(projectTags)
       .leftJoin(tags, eq(projectTags.tagId, tags.id))
@@ -126,6 +128,20 @@ export default defineEventHandler(async (event): Promise<{
       const avaRows = await db.select({ userId: userAvatars.userId }).from(userAvatars).where(inArray(userAvatars.userId, userIds))
       for (const a of avaRows) hasAvatarByUserId.set(Number(a.userId), true)
     }
+
+    // Fetch favorites for current user if authenticated
+    const session = await getSession(event)
+    if (session) {
+      const favRows = await db.select({ projectId: projectFavorites.projectId })
+        .from(projectFavorites)
+        .where(
+          and(
+            eq(projectFavorites.userId, Number(session.sub)),
+            inArray(projectFavorites.projectId, ids)
+          )
+        )
+      for (const r of favRows) favoriteSet.add(Number(r.projectId))
+    }
   }
 
   const items = rows.map((p: any) => ({
@@ -142,6 +158,7 @@ export default defineEventHandler(async (event): Promise<{
     creatorUsername: usernameByUserId.get(p.userId) || undefined,
     creatorHasAvatar: hasAvatarByUserId.get(p.userId) || false,
     creatorAvatarUrl: hasAvatarByUserId.get(p.userId) ? `/api/users/${p.userId}/avatar` : null,
+    isFavorite: favoriteSet.has(Number(p.id)),
   }))
 
   return { items: items as PaginationItem[], total, page, pageSize }

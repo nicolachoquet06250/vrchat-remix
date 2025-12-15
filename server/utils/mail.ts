@@ -4,6 +4,7 @@ import SignupConfirmed from '~~/app/mails/SignupConfirmed.vue'
 import Verification from '~~/app/mails/Verification.vue'
 import NewProjectAlert from '~~/app/mails/NewProjectAlert.vue'
 import PasswordReset from '~~/app/mails/PasswordReset.vue'
+import ProjectUpdate from "@/mails/ProjectUpdate.vue";
 
 type MailEnv = {
   SMTP_HOST?: string
@@ -189,6 +190,32 @@ export async function sendPasswordResetEmail(to: string, token: string, username
     resetUrl, appName
   }, { plainText: true })
 
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendProjectUpdatedEmail(to: string, params: { projectId: number, projectName: string, username: string }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+  const logoUrl = `${appUrl}/vrchat-remix.png`
+
+  const projectUrl = `${appUrl}/projects/${params.projectId}`
+  const subject = `${appName} – ${params.projectName} a été mis à jour`
+  const html = await render(ProjectUpdate, {
+    appUrl, username: params.username,
+    logoUrl, appName,
+    projectName: params.projectName,
+    projectId: params.projectId,
+    projectUrl
+  }, { pretty: true })
+  const text = await render(ProjectUpdate, {
+    appUrl, username: params.username, appName,
+    projectName: params.projectName,
+    projectId: params.projectId,
+    projectUrl
+  }, { plainText: true })
   const t = getTransporter()
   return t?.sendMail({ from, to, subject, text, html })
 }

@@ -104,6 +104,18 @@ export const projectTags = mysqlTable('project_tags', {
   tagIdx: index('pt_tag_idx').on(table.tagId),
 }))
 
+// Favoris projets par utilisateur
+export const projectFavorites = mysqlTable('project_favorites', {
+  userId: int('user_id').notNull(),
+  projectId: int('project_id').notNull(),
+  createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+}, (table) => ({
+  uniquePerUser: unique('project_fav_user_project_unique').on(table.userId, table.projectId),
+  userIdx: index('pf_user_idx').on(table.userId),
+  projectIdx: index('pf_project_idx').on(table.projectId),
+}))
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   avatar: many(userAvatars),
 }))

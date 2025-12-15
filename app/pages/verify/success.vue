@@ -1,7 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ name: 'verify-success' })
 useSeoMeta({
-  ogTitle: 'E‑mail vérifié',
+  ogTitle: 'VRC Remix - E‑mail vérifié',
   ogImage: '/vrchat-remix.png',
   description: 'Votre e‑mail a été vérifié. Vous pouvez vous connecter.',
   ogDescription: 'Votre e‑mail a été vérifié. Vous pouvez vous connecter.',

@@ -2,7 +2,7 @@
 const route = useRoute()
 definePageMeta({ name: 'verify-sent' })
 useSeoMeta({
-  ogTitle: 'Vérifiez votre e‑mail',
+  ogTitle: 'VRC Remix - Vérifiez votre e‑mail',
   ogImage: '/vrchat-remix.png',
   description: 'Un lien de vérification vous a été envoyé par e‑mail.',
   ogDescription: 'Un lien de vérification vous a été envoyé par e‑mail.',
