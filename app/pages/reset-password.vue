@@ -95,5 +95,5 @@ label { font-weight: 600; }
 input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
 button { background: #2b59c3; color: #fff; border: 0; border-radius: 6px; padding: 10px 14px; cursor: pointer; }
 .error { color: #b00020; }
-.success { background: #f0f7ff; border: 1px solid #cfe0ff; padding: 12px; border-radius: 6px; }
+.success { background: darkgreen; border: 1px solid #cfe0ff; padding: 12px; border-radius: 6px; }
 </style>
