@@ -87,8 +87,7 @@ export default defineNuxtConfig({
       start_url: '/projects',
       display: 'fullscreen',
       lang: 'fr',
-      categories: ['community', 'creation', 'vrchat'],
-      orientation: 'portrait-primary'
+      categories: ['community', 'creation', 'vrchat']
     }
   },
 
