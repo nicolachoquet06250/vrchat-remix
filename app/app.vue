@@ -16,11 +16,11 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
         <img src="/vrchat-remix.png" alt="logo vrchat remix" class="logo">
       </NuxtLink>
       <a
+          v-if="router.resolve({name: 'root'}).href !== route.path"
           :href="router.resolve({name: 'home'}).href"
           @click.prevent.stop="navigateTo({name: 'home'})"
           :class="['menu-item', {
-            'router-link-active': (router.resolve({name: 'home'}).href === route.path ||
-            router.resolve({name: 'root'}).href === route.path)
+            'router-link-active': router.resolve({name: 'home'}).href === route.path
           }]"
       >
         Projets
@@ -40,7 +40,7 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
       </div>
     </header>
 
-    <main style="padding:16px">
+    <main style="padding: 16px 16px 0;">
       <NuxtPage />
     </main>
 
@@ -59,6 +59,11 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
   box-sizing: border-box;
   font-family: Arial, sans-serif;
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
 </style>
 
 <style scoped>
@@ -66,7 +71,6 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
   display: flex;
   gap: 12px;
   padding-right: 12px;
-  /*border-bottom: 1px solid #eee;*/
   align-items: center;
 
   a:focus {
