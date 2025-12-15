@@ -18,8 +18,8 @@ const goToProjects = () => navigateTo({ name: 'home' })
 <template>
   <section class="hero">
     <div class="hero-inner">
-      <img src="/vrchat-remix.png" alt="Logo VRChat Remix" class="hero-logo" />
-      <h1>VRChat Remix</h1>
+      <img src="/vrchat-remix.png" alt="Logo VRC Remix" class="hero-logo" />
+      <h1>VRC Remix</h1>
       <p class="tagline">Le hub pour découvrir, remixer et partager des projets VRChat.</p>
       <p class="tagline">Recherchez par nom ou par tag, enregistrez des alertes et suivez facilement les nouveautés.</p>
 

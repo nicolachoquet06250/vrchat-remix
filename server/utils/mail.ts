@@ -53,7 +53,7 @@ function getTransporter() {
 
 export async function sendSignupConfirmation(to: string, username?: string) {
   const env: MailEnv = process.env as any
-  const appName = env.APP_NAME || 'VRChat Remix'
+  const appName = env.APP_NAME || 'VRC Remix'
   const appUrl = env.APP_URL || 'http://localhost:3000'
   const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
   const logoUrl = `${appUrl}/vrchat-remix.png`
@@ -81,7 +81,7 @@ export async function sendSignupConfirmation(to: string, username?: string) {
 
 export async function sendVerificationEmail(to: string, token: string, username?: string) {
   const env: MailEnv = process.env as any
-  const appName = env.APP_NAME || 'VRChat Remix'
+  const appName = env.APP_NAME || 'VRC Remix'
   const appUrl = env.APP_URL || 'http://localhost:3000'
   const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
   const logoUrl = `${appUrl}/vrchat-remix.png`
@@ -111,7 +111,7 @@ export async function sendVerificationEmail(to: string, token: string, username?
 
 export async function sendNewProjectAlert(to: string, params: { projectId: number, projectName: string, query: string, type: 'project'|'tag' }) {
   const env: MailEnv = process.env as any
-  const appName = env.APP_NAME || 'VRChat Remix'
+  const appName = env.APP_NAME || 'VRC Remix'
   const appUrl = env.APP_URL || 'http://localhost:3000'
   const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
   const logoUrl = `${appUrl}/vrchat-remix.png`
@@ -142,7 +142,7 @@ export async function sendNewProjectAlert(to: string, params: { projectId: numbe
 
 export async function sendVerifiedConfirmation(to: string, username?: string) {
   const env: MailEnv = process.env as any
-  const appName = env.APP_NAME || 'VRChat Remix'
+  const appName = env.APP_NAME || 'VRC Remix'
   const appUrl = env.APP_URL || 'http://localhost:3000'
   const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
   const logoUrl = `${appUrl}/vrchat-remix.png`
