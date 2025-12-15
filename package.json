@@ -13,6 +13,7 @@
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts"
   },
   "dependencies": {
+    "@nuxtjs/mdc": "^0.19.1",
     "@vite-pwa/nuxt": "^1.1.0",
     "@vitejs/plugin-vue": "^6.0.3",
     "@vue-email/components": "^0.0.21",

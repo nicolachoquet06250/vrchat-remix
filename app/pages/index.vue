@@ -13,6 +13,26 @@ useSeoMeta({
 })
 
 const goToProjects = () => navigateTo({ name: 'home' })
+
+type LatestUpdate = {
+  ok: boolean
+  error?: string
+  data?: {
+    number: number
+    title: string
+    message: string | null
+    mergedAt: string
+    htmlUrl: string
+    author: string | null,
+    authorAvatar: string | null
+  } | null
+}
+
+const { data: latestUpdate, pending: latestPending, error: latestError } = await useAsyncData<LatestUpdate>(
+  'latest-update',
+  () => $fetch('/api/updates/latest'),
+  { server: true, lazy: true }
+)
 </script>
 
 <template>
@@ -43,6 +63,35 @@ const goToProjects = () => navigateTo({ name: 'home' })
           <span class="feature-desc">Publiez vos projets et collaborez avec la communauté.</span>
         </li>
       </ul>
+    </div>
+  </section>
+
+  <section class="updates">
+    <div class="updates-inner">
+      <h2 class="updates-title">Dernières updates</h2>
+
+      <div v-if="latestPending" class="updates-card">Chargement…</div>
+      <div v-else-if="latestError" class="updates-card error">Impossible de récupérer les updates. Réessayez plus tard.</div>
+      <div v-else>
+        <div v-if="latestUpdate?.ok && latestUpdate.data" class="updates-card">
+          <div class="updates-meta">
+            <span class="badge">Merge</span>
+            <time :datetime="latestUpdate.data.mergedAt">{{ new Date(latestUpdate.data.mergedAt).toLocaleString() }}</time>
+          </div>
+          <h3 class="update-title">{{ latestUpdate.data.title }}</h3>
+          <p v-if="latestUpdate.data.message" class="update-message">
+            <MDC :value="latestUpdate.data.message" tag="section" />
+          </p>
+          <p class="update-footer">
+            <a :href="latestUpdate.data.htmlUrl" target="_blank" rel="noopener noreferrer">Voir sur GitHub</a>
+            <span v-if="latestUpdate.data.author"> — par <img v-if="latestUpdate.data.authorAvatar" :src="latestUpdate.data.authorAvatar" alt="avatar github user" class="github-avatar">{{ latestUpdate.data.author }}</span>
+          </p>
+        </div>
+        <div v-else-if="latestUpdate?.ok && !latestUpdate.data" class="updates-card">Aucun merge récent.</div>
+        <div v-else class="updates-card warning">
+          Section non configurée. Définissez les variables NUXT_PUBLIC_GITHUB_OWNER et NUXT_PUBLIC_GITHUB_REPO.
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -138,5 +187,61 @@ h1 {
 .feature-desc {
   display: block;
   color: light-dark(#334155, #cbd5e1);
+}
+
+/* Updates */
+.updates {
+  border-top: 1px solid light-dark(#e5e7eb, #1f2937);
+  padding: 24px 0 48px;
+}
+.updates-inner {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.updates-title {
+  margin: 4px 0 16px;
+  font-size: 22px;
+  color: light-dark(#0f172a, #ffffff);
+}
+.updates-card {
+  background: light-dark(#ffffff, #18202b);
+  color: light-dark(#0f172a, #e2e8f0);
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid light-dark(#e5e7eb, #1f2937);
+}
+.updates-card.error { border-color: #ef4444; }
+.updates-card.warning { border-color: #f59e0b; }
+.updates-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: light-dark(#334155, #cbd5e1);
+  font-size: 14px;
+}
+.badge {
+  display: inline-block;
+  background: light-dark(#e5f7f9, #0f2024);
+  color: light-dark(#0b2a2e, #8be9ff);
+  border: 1px solid light-dark(#cbeef3, #15323a);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.update-title { margin: 8px 0; font-size: 18px; }
+.update-message { white-space: pre-wrap; color: light-dark(#334155, #cbd5e1); }
+.update-footer { margin-top: 8px; font-size: 14px; color: light-dark(#334155, #cbd5e1); }
+.update-footer a { color: light-dark(#0ea5e9, #7dd3fc); text-decoration: underline; }
+
+.github-avatar {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 10px;
+  margin-left: 10px;
 }
 </style>

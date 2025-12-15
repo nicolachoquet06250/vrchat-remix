@@ -1,20 +1,16 @@
 import vue from '@vitejs/plugin-vue'
-import {VitePWA} from "vite-plugin-pwa";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: [
-      '@vite-pwa/nuxt',
-    (_, nuxt) => {
-      // @ts-ignore
-      nuxt.hook('pwa:beforeBuildServiceWorker', options => {
-        console.log('pwa:beforeBuildServiceWorker: ', options.base)
-      })
-    }
-  ],
+  modules: ['@vite-pwa/nuxt', (_, nuxt) => {
+    // @ts-ignore
+    nuxt.hook('pwa:beforeBuildServiceWorker', options => {
+      console.log('pwa:beforeBuildServiceWorker: ', options.base)
+    })
+  }, '@nuxtjs/mdc'],
 
   // @ts-ignore
   pwa: {
@@ -108,7 +104,13 @@ export default defineNuxtConfig({
     databaseUrl: process.env.DB_CREDENTIALS_URL, // e.g. mysql://user:pass@localhost:3306/vrchat_remix
     jwtSecret: process.env.JWT_SECRET,
     // Public (exposed to client)
-    public: {}
+    public: {
+      // Configurez ces valeurs pour activer la section "Dernières updates" depuis GitHub
+      githubOwner: process.env.NUXT_PUBLIC_GITHUB_OWNER || '',
+      githubRepo: process.env.NUXT_PUBLIC_GITHUB_REPO || ''
+    },
+    // Token GitHub optionnel (augmente la limite de rate et permet l'accès privé si nécessaire)
+    githubToken: process.env.GITHUB_TOKEN
   },
 
   app: {
