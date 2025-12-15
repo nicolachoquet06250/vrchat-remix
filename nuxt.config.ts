@@ -103,12 +103,6 @@ export default defineNuxtConfig({
     // Server-only
     databaseUrl: process.env.DB_CREDENTIALS_URL, // e.g. mysql://user:pass@localhost:3306/vrchat_remix
     jwtSecret: process.env.JWT_SECRET,
-    // Public (exposed to client)
-    public: {
-      // Configurez ces valeurs pour activer la section "Dernières updates" depuis GitHub
-      githubOwner: process.env.NUXT_PUBLIC_GITHUB_OWNER || '',
-      githubRepo: process.env.NUXT_PUBLIC_GITHUB_REPO || ''
-    },
     // Token GitHub optionnel (augmente la limite de rate et permet l'accès privé si nécessaire)
     githubToken: process.env.GITHUB_TOKEN
   },

@@ -35,6 +35,7 @@ jobs:
           echo "APP_URL=${{secrets.APP_URL}}" >> .env
           echo "NUXT_PUBLIC_GITHUB_OWNER=nicolachoquet06250" >> .env
           echo "NUXT_PUBLIC_GITHUB_REPO=vrchat-remix" >> .env
+          echo "NUXT_PUBLIC_GITHUB_TOKEN=${{secrets.NUXT_PUBLIC_GITHUB_TOKEN}}" >> .env
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -104,6 +105,7 @@ jobs:
           echo "APP_URL=${{secrets.APP_URL}}" >> build/.env
           echo "NUXT_PUBLIC_GITHUB_OWNER=nicolachoquet06250" >> build/.env
           echo "NUXT_PUBLIC_GITHUB_REPO=vrchat-remix" >> build/.env
+          echo "NUXT_PUBLIC_GITHUB_TOKEN=${{secrets.NUXT_PUBLIC_GITHUB_TOKEN}}" >> build/.env
 
       - name: Debug artifact contents
         run: |

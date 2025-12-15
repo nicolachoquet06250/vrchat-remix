@@ -606,9 +606,9 @@ type Author = {
 
 export default defineEventHandler(async () => {
   const config = useRuntimeConfig();
-  const owner = config.public.githubOwner as string;
-  const repo = config.public.githubRepo as string;
-  const token = config.githubToken as string | undefined;
+  const owner = process.env.NUXT_PUBLIC_GITHUB_OWNER as string;
+  const repo = process.env.NUXT_PUBLIC_GITHUB_REPO as string;
+  const token = process.env.NUXT_PUBLIC_GITHUB_TOKEN as string;
 
   if (!owner || !repo) {
     return {
@@ -619,10 +619,8 @@ export default defineEventHandler(async () => {
 
   const headers: Record<string, string> = {
     'Accept': 'application/vnd.github+json',
-    'X-GitHub-Api-Version': '2022-11-28'
-  }
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Authorization': `Bearer ${token}`
   }
 
   try {

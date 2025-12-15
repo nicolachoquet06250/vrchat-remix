@@ -33,6 +33,12 @@ const { data: latestUpdate, pending: latestPending, error: latestError } = await
   () => $fetch('/api/updates/latest'),
   { server: true, lazy: true }
 )
+
+// Référence et action de scroll vers la section "Dernières updates"
+const updatesEl = ref<HTMLElement | null>(null)
+const scrollToUpdates = () => {
+  updatesEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 </script>
 
 <template>
@@ -63,10 +69,27 @@ const { data: latestUpdate, pending: latestPending, error: latestError } = await
           <span class="feature-desc">Publiez vos projets et collaborez avec la communauté.</span>
         </li>
       </ul>
+
+      <!-- Bouton dans le flux, centré sous les 3 encarts (desktop uniquement) -->
+      <button
+        class="scroll-down-btn"
+        type="button"
+        aria-label="Voir les dernières updates"
+        title="Voir les dernières updates"
+        @click="scrollToUpdates"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 4v13m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Voir les mises à jour
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 4v13m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
   </section>
 
-  <section class="updates">
+  <section class="updates" ref="updatesEl">
     <div class="updates-inner">
       <h2 class="updates-title">Dernières updates</h2>
 
@@ -243,5 +266,38 @@ h1 {
   vertical-align: middle;
   margin-right: 10px;
   margin-left: 10px;
+}
+
+/* Bouton « descendre » sous les encarts (desktop uniquement) */
+.scroll-down-btn {
+  width: auto;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid light-dark(#e5e7eb, #1f2937);
+  background: light-dark(#ffffffd9, #1b2632e6);
+  color: light-dark(#0f172a, #e2e8f0);
+  box-shadow: 0 12px 30px light-dark(#00000022, #00000066);
+  display: none; /* caché par défaut (mobile/tablette) */
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  margin: 18px auto 0; /* centré sous les 3 encarts */
+}
+
+.scroll-down-btn:hover { background: light-dark(#ffffff, #253244); }
+.scroll-down-btn:focus { outline: 2px solid light-dark(#0005, #fff5); outline-offset: 2px; }
+.scroll-down-btn svg { display: block; margin: 0 auto; animation: float 1.6s ease-in-out infinite; }
+
+@media (min-width: 720px) {
+  .scroll-down-btn { display: inline-flex; flex-direction: row; place-items: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-down-btn svg { animation: none; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+  100% { transform: translateY(0); }
 }
 </style>
