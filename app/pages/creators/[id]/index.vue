@@ -20,7 +20,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: () => data.value?.user ? `Créateur · ${data.value.user.username}` : 'Créateur',
+  title: () => `VRC Remix - ${data.value?.user ? `Créateur · ${data.value.user.username}` : 'Créateur'}`,
   ogTitle: () => data.value?.user ? `VRC Remix - ${data.value.user.username}` : 'VRC Remix - Créateur',
   description: 'Profil créateur et projets publics',
   ogDescription: 'Profil créateur et projets publics',
