@@ -2,7 +2,8 @@
 const route = useRoute()
 definePageMeta({ name: 'verify-sent' })
 useSeoMeta({
-  ogTitle: 'VRC Remix - Vérifiez votre e‑mail',
+  title: 'VRC Remix - Vérifiez votre e‑mail',
+  ogTitle: 'Vérifiez votre e‑mail',
   ogImage: '/vrchat-remix.png',
   description: 'Un lien de vérification vous a été envoyé par e‑mail.',
   ogDescription: 'Un lien de vérification vous a été envoyé par e‑mail.',
@@ -37,7 +38,7 @@ async function resend() {
 
     <div class="card">
       <p>Nous avons envoyé un lien de vérification à <strong>{{ email || 'votre adresse' }}</strong>.</p>
-      <p>Vous ne trouvez pas l’e‑mail ? Vérifiez vos spams ou renvoyez le lien :</p>
+      <p>Vous ne trouvez pas l’e‑mail ? Vérifiez vos spams ou renvoyez le lien :</p>
 
       <div class="form">
         <label class="float">

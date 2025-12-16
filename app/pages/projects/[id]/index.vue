@@ -1,11 +1,13 @@
 <script setup lang="ts">
-definePageMeta({
-  name: 'project'
-})
 const route = useRoute()
 const id = Number(route.params.id)
 const { user } = useSession()
 const { ucFirst } = useHelpers()
+const {locale} = useI18n()
+
+definePageMeta({
+  name: 'project'
+})
 
 const { data, pending, error, refresh } = await useFetch(`/api/projects/${id}`)
 
@@ -13,15 +15,16 @@ const { data, pending, error, refresh } = await useFetch(`/api/projects/${id}`)
 const { data: images } = await useFetch(`/api/projects/${id}/images`)
 
 useSeoMeta({
-  ogTitle: computed(() => data.value!.name),
-  ogImage: computed(() => {
+  title: () => `VRC Remix - ${data.value?.name}`,
+  ogTitle: () => data.value!.name,
+  ogImage: () => {
     if (images.value && images.value.length > 0) {
       return `/api/projects/images/og-image?id=${[...images.value].shift()!.id}&d=${new Date().getTime()}`
     }
     return '/vrchat-remix.png'
-  }),
-  description: computed(() => data.value!.description),
-  ogDescription: computed(() => data.value!.description),
+  },
+  description: () => data.value!.description,
+  ogDescription: () => data.value!.description,
   twitterCard: 'app'
 })
 
@@ -254,12 +257,12 @@ onBeforeUnmount(() => {
       <div class="header">
         <h1 class="title">{{ ucFirst(data!.name) }}</h1>
         <div class="spacer" />
-        <NuxtLink v-if="isOwner" :to="{name: 'edit-project', params: {id}}" class="btn">Modifier</NuxtLink>
+        <NuxtLink v-if="isOwner" :to="{name: `edit-project___${locale}`, params: {id}}" class="btn">Modifier</NuxtLink>
       </div>
 
       <div class="meta">
         <span class="creator">
-          <NuxtLink :to="{name: 'creator', params: {id: data!.userId}}" style="text-decoration: underline; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
+          <NuxtLink :to="{name: `creator___${locale}`, params: {id: data!.userId}}" style="text-decoration: underline; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
             <template v-if="data!.creatorHasAvatar && data!.creatorAvatarUrl">
               <img
                 class="avatar"

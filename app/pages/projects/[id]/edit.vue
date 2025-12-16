@@ -2,6 +2,7 @@
 const route = useRoute()
 const id = Number(route.params.id)
 const router = useRouter()
+const {locale} = useI18n()
 
 definePageMeta({
   name: 'edit-project'
@@ -17,7 +18,8 @@ onMounted(() => {
 const { data, pending, error } = await useFetch(`/api/projects/${id}`)
 
 useSeoMeta({
-  ogTitle: computed(() => `Modifier le projet "${data.value?.name}"`),
+  title: () => `VRC Remix - Modifier le projet "${data.value?.name}"`,
+  ogTitle: () => `Modifier le projet "${data.value?.name}"`,
   ogImage: '/vrchat-remix.png',
   description: 'créer un nouveau projet remix',
   ogDescription: 'créer un nouveau projet remix',
@@ -194,16 +196,16 @@ async function onDeleteImage(imageId: number) {
 
 <template>
   <Head>
-    <Title>Modifier le projet "{{data!.name}}"</Title>
+    <Title>{{ $t('projects.edit.title') }} "{{data!.name}}"</Title>
   </Head>
 
   <div class="container">
     <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-      <h1>Modifier le projet</h1>
+      <h1>{{ $t('projects.edit.title') }}</h1>
 
       <UiSwitch
-          v-model="form.isPublic"
-          :label="{
+        v-model="form.isPublic"
+        :label="{
           before: 'Privé',
           after: 'Publique'
         }"
@@ -283,7 +285,7 @@ async function onDeleteImage(imageId: number) {
       <div class="actions">
         <button type="submit" :disabled="saving" class="save-btn">Enregistrer</button>
         <button type="button" class="danger" :disabled="deleting" @click="onDelete">Supprimer</button>
-        <NuxtLink :to="{name: 'project', params: {id}}" class="link btn">Annuler</NuxtLink>
+        <NuxtLink :to="{name: `project___${locale}`, params: {id}}" class="link btn">Annuler</NuxtLink>
       </div>
       <p v-if="errMsg" class="error">{{ errMsg }}</p>
     </form>

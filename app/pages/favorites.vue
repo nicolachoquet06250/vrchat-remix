@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { user } = useSession()
+const {locale} = useI18n()
 
 onMounted(() => {
   setTimeout(() => {
@@ -15,7 +16,7 @@ definePageMeta({
 
 useSeoMeta({
   title: 'VRC Remix - Mes favoris',
-  ogTitle: 'Mes favoris',
+  ogTitle: 'VRC Remix - Mes favoris',
   description: 'Retrouvez ici tous les projets que vous avez ajoutés à vos favoris.',
   ogDescription: 'Vos projets favoris sur VRC Remix.',
   twitterCard: 'app'
@@ -61,7 +62,7 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
       </p>
       <ul v-else class="grid">
         <li v-for="p in data!.items" :key="p.id" class="card">
-          <NuxtLink :to="{ name: 'project', params: { id: p.id } }">
+          <NuxtLink :to="{ name: `project___${locale}`, params: { id: p.id } }">
             <div v-if="p.coverImageId" class="cover">
               <img :src="`/api/projects/images/${p.coverImageId}`" :alt="`${p.name} cover`" />
             </div>

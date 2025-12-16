@@ -1,0 +1,104 @@
+{
+  "loading": "loading...",
+  "nav": {
+    "projects": "Projects",
+    "login": "Login",
+    "register": "Sign up",
+    "profile": "Profile",
+    "language": "Language",
+    "french": "French",
+    "english": "English"
+  },
+  "alt": {
+    "logo": "vrchat remix logo",
+    "avatar": "Avatar"
+  },
+  "profil": {
+    "choose-language": "Choose your language",
+    "header": {
+      "back": "Back",
+      "disconnect": "Disconnect"
+    },
+    "title": "Profile",
+    "subtitle": "Manage your avatar and personal informations",
+    "inscription": "Inscription",
+    "avatar": "Avatar",
+    "choose-image": "Choose an image",
+    "formats": "Accepted formats: ",
+    "no-file": "No file selected",
+    "upload": "Upload",
+    "profil-informations": "Profile informations",
+    "alert": "If you update your email, you will need to validate it via a verification email",
+    "pseudo": "Pseudo",
+    "email": "Email",
+    "save": "Save",
+    "change-password": "Change password",
+    "current-password": "Current password",
+    "new-password": "New password",
+    "confirm-new-password": "Confirm new password",
+    "change": "Change password",
+    "change-success": "Password changed successfully",
+    "change-error": "Error while changing password"
+  },
+  "projects": {
+    "edit": {
+      "title": "Update project"
+    },
+    "index": {
+      "title": "Projects",
+      "switch": {
+        "all-projects": "All projects",
+        "my-projects": "My projects",
+        "tag": "Tag",
+        "name": "Name"
+      },
+      "modal": {
+        "title": "My saved searches",
+        "type": "Type",
+        "search": "Recherche",
+        "actions": "Actions",
+        "delete-project": "Delete this alert",
+        "delete": "Delete",
+        "no-saved-searches": "You have no saved searches yet."
+      },
+      "no-projects": "No projects yet.",
+      "empty-description": "Empty description",
+      "pagination": {
+        "next": "Next",
+        "previous": "Previous",
+        "page": "Page"
+      }
+    }
+  },
+  "index": {
+    "tagline": {
+      "1": "The hub for discovering, remixing and sharing VRChat projects.",
+      "2": "Search by name or tag, save alerts and follow new projects easily."
+    },
+    "button-projects": "Discover projects",
+    "sections": {
+      "1": {
+        "title": "Search multi-type",
+        "description": "By name or tag to quickly find the right project."
+      },
+      "2": {
+        "title": "Personalized alerts",
+        "description": "Save your searches and receive an alert as soon as there is a new project."
+      },
+      "3": {
+        "title": "Simplified sharing",
+        "description": "Publish your projects and collaborate with the community."
+      }
+    },
+    "button-updates": "See updates",
+    "last-update": {
+      "title": "Last updates",
+      "no-data": "No recent merges.",
+      "error-1": "Impossible to retrieve updates. Please try again later.",
+      "error-2": "Section not configured. Set the NUXT_PUBLIC_GITHUB_OWNER and NUXT_PUBLIC_GITHUB_REPO variables.",
+      "merge": "Merge",
+      "see-on-github": "See on GitHub",
+      "by": "by"
+    }
+  }
+}

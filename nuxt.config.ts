@@ -1,16 +1,37 @@
 import vue from '@vitejs/plugin-vue'
+import type {NuxtModule} from "@nuxt/schema";
+
+const pwaModule: NuxtModule = (_, nuxt) => {
+  // @ts-ignore
+  nuxt.hook('pwa:beforeBuildServiceWorker', options => {
+    console.log('pwa:beforeBuildServiceWorker: ', options.base)
+  })
+}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@vite-pwa/nuxt', (_, nuxt) => {
-    // @ts-ignore
-    nuxt.hook('pwa:beforeBuildServiceWorker', options => {
-      console.log('pwa:beforeBuildServiceWorker: ', options.base)
-    })
-  }, '@nuxtjs/mdc'],
+  modules: ['@vite-pwa/nuxt', '@nuxtjs/mdc', pwaModule, '@nuxtjs/i18n'],
+
+  i18n: {
+    vueI18n: './i18n.config.ts',
+    locales: [
+      { code: 'fr', iso: 'fr-FR', name: 'Français', file: 'fr.json' },
+      { code: 'en', iso: 'en-US', name: 'English', file: 'en.json' }
+    ],
+    defaultLocale: 'fr',
+    strategy: 'prefix_except_default',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root' // only root route gets redirected
+    },
+    compilation: {
+      strictMessage: false
+    }
+  },
 
   // @ts-ignore
   pwa: {

@@ -19,9 +19,8 @@ function onChange(e: Event) {
 
 <template>
   <label class="ui-switch" :data-disabled="props.disabled ? '' : null">
-    <span v-if="props.label" class="ui-switch__label">
-      {{ typeof props.label === 'object' ? props.label.before : props.label }}
-    </span>
+    <span v-if="props.label" class="ui-switch__label"
+          v-html="typeof props.label === 'object' ? props.label.before : props.label"/>
     <input
       :id="id"
       class="ui-switch__input"
@@ -35,9 +34,8 @@ function onChange(e: Event) {
     <span class="ui-switch__track" aria-hidden="true">
       <span class="ui-switch__thumb"></span>
     </span>
-    <span v-if="props.label" class="ui-switch__label">
-      {{ typeof props.label === 'object' ? props.label.after : props.label }}
-    </span>
+    <span v-if="props.label" class="ui-switch__label"
+          v-html="typeof props.label === 'object' ? props.label.after : props.label" />
   </label>
   
 </template>

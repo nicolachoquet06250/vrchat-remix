@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import {useHelpers} from "@/composables/useHelpers";
-
-definePageMeta({
-  name: 'home'
-})
-
 const route = useRoute()
 const router = useRouter()
 const { user } = useSession()
 const { ucFirst } = useHelpers()
+const {locale} = useI18n()
+
+definePageMeta({
+  name: 'projects'
+})
 
 useSeoMeta({
+  title: 'VRC Remix - Liste des projets',
   ogTitle: 'VRC Remix - Liste des projets',
   ogImage: '/vrchat-remix.png',
   description: 'Equivalent de la fonctionnalité remix de meta pour vrchat',
@@ -132,6 +132,16 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
     favToggling.value[projectId] = false
   }
 }
+
+function convertDateFromLocal(date: Date|string) {
+  const convertedDate = ref(new Date(date).toLocaleDateString(locale.value));
+
+  watch(locale, () => {
+    convertedDate.value = new Date(date).toLocaleDateString(locale.value);
+  })
+
+  return convertedDate;
+}
 </script>
 
 <template>
@@ -141,16 +151,24 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 
   <div class="container">
     <div class="header" style="flex-wrap: wrap;">
-      <h1>Projets</h1>
+      <h1>{{ $t('projects.index.title') }}</h1>
       <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px;">
-        <button v-if="user && (alerts?.length ?? 0) > 0" class="btn no-auto" type="button" @click="showAlerts = true">Mes recherches</button>
+        <button v-if="user && (alerts?.length ?? 0) > 0" class="btn no-auto" type="button" @click="showAlerts = true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/>
+          </svg>
+        </button>
         <NuxtLink v-if="user" to="/favorites" class="btn">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
             <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
             <path d="M192 64C156.7 64 128 92.7 128 128L128 544C128 555.5 134.2 566.2 144.2 571.8C154.2 577.4 166.5 577.3 176.4 571.4L320 485.3L463.5 571.4C473.4 577.3 485.7 577.5 495.7 571.8C505.7 566.1 512 555.5 512 544L512 128C512 92.7 483.3 64 448 64L192 64z"/>
           </svg>
         </NuxtLink>
-        <NuxtLink v-if="user" :to="{name: 'create-project'}" class="btn">Nouveau projet</NuxtLink>
+        <NuxtLink v-if="user" :to="{name: `create-project___${locale}`}" class="btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/>
+          </svg>
+        </NuxtLink>
       </div>
     </div>
 
@@ -160,8 +178,8 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
           style="margin-right: 20px;"
           v-model="searchTypeBool"
           :label="{
-            before: 'Nom',
-            after: 'Tag'
+            before: $t('projects.index.switch.name'),
+            after: $t('projects.index.switch.tag')
           }"
       />
 
@@ -177,7 +195,12 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 
       <div v-if="user && ((searchBy==='project' && q) || (searchBy==='tag' && tag))" class="alerts">
         <button type="button" class="btn" :disabled="saving" @click="saveCurrentSearch">
-          {{ saving ? 'Enregistrement…' : 'Enregistrer cette recherche' }}
+          <svg v-if="!saving" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 237.3C544 220.3 537.3 204 525.3 192L448 114.7C436 102.7 419.7 96 402.7 96L160 96zM192 192C192 174.3 206.3 160 224 160L384 160C401.7 160 416 174.3 416 192L416 256C416 273.7 401.7 288 384 288L224 288C206.3 288 192 273.7 192 256L192 192zM320 352C355.3 352 384 380.7 384 416C384 451.3 355.3 480 320 480C284.7 480 256 451.3 256 416C256 380.7 284.7 352 320 352z"/>
+          </svg>
+          <template v-else>
+            Enregistrement…
+          </template>
         </button>
         <span v-if="saveMsg" class="hint">{{ saveMsg }}</span>
       </div>
@@ -187,35 +210,35 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
           id="mineOnlySwitch"
           v-model="mineOnly"
           :label="{
-            before: 'Tous les projets',
-            after: 'Mes projets'
+            before: $t('projects.index.switch.all-projects'),
+            after: $t('projects.index.switch.my-projects')
           }"
           @update:modelValue="toggleMineOnly"
         />
       </div>
     </form>
 
-    <UiModal v-model="showAlerts" title="Mes recherches enregistrées">
+    <UiModal v-model="showAlerts" :title="$t('projects.index.modal.title')">
       <template v-if="alerts?.length">
         <table class="alerts-table">
           <thead>
-          <tr>
-            <th>Type</th>
-            <th>Recherche</th>
-            <th class="actions">Actions</th>
-          </tr>
+            <tr>
+              <th>{{ $t('projects.index.modal.type') }}</th>
+              <th>{{ $t('projects.index.modal.search') }}</th>
+              <th class="actions">{{ $t('projects.index.modal.actions') }}</th>
+            </tr>
           </thead>
           <tbody>
           <tr v-for="a in alerts" :key="a.id">
-            <td>{{ a.type === 'tag' ? 'Tag' : 'Nom' }}</td>
+            <td>{{ a.type === 'tag' ? $t('projects.index.switch.tag') : $t('projects.index.switch.name') }}</td>
             <td>{{ a.query }}</td>
             <td class="actions">
-              <button type="button" class="danger" @click="deleteAlert(a.id)" aria-label="Supprimer cette alerte">
+              <button type="button" class="danger" @click="deleteAlert(a.id)" :aria-label="$t('projects.index.modal.delete-project')">
                 <!-- Icône poubelle -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 448 512" aria-hidden="true" focusable="false" style="vertical-align: middle; margin-right: 6px;">
                   <path fill="currentColor" d="M135.2 17.7C140.6 7.1 151.4 0 163.5 0h121c12.1 0 22.9 7.1 28.3 17.7L328 32H432c8.8 0 16 7.2 16 16s-7.2 16-16 16H16C7.2 64 0 56.8 0 48S7.2 32 16 32H120l15.2-14.3zM32 96H416l-21.2 371.6c-1.8 31.4-27.7 56.4-59.2 56.4H112.4c-31.5 0-57.4-25-59.2-56.4L32 96zm128 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V176c0-8.8-7.2-16-16-16zm128 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V176c0-8.8-7.2-16-16-16z"/>
                 </svg>
-                <span>Supprimer</span>
+                <span>{{ $t('projects.index.modal.delete') }}</span>
               </button>
             </td>
           </tr>
@@ -223,17 +246,17 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
         </table>
       </template>
       <template v-else>
-        <p>Aucune recherche enregistrée pour le moment.</p>
+        <p>{{ $t('projects.index.modal.no-saved-searches') }}</p>
       </template>
     </UiModal>
 
-    <div v-if="pending">Chargement…</div>
+    <div v-if="pending">{{ $t('loading') }}</div>
     <div v-else>
-      <div v-if="!data?.items?.length">Aucun projet trouvé.</div>
+      <div v-if="!data?.items?.length">{{ $t('projects.index.no-projects') }}</div>
 
       <ul class="grid">
         <li v-for="p in data?.items!" :key="p.id" class="card">
-          <NuxtLink :to="{name: 'project', params: {id: p.id}}">
+          <NuxtLink :to="{name: `project___${locale}`, params: {id: p.id}}">
             <div v-if="p.coverImageId" class="cover">
               <img :src="`/api/projects/images/${p.coverImageId}`" :alt="`${p.name} cover`" />
             </div>
@@ -243,7 +266,7 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 
             <div class="meta">
               <span class="creator">
-                <NuxtLink :to="{name: 'creator', params: {id: p.userId}}" style="text-decoration: underline; text-underline-offset: 4px; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
+                <NuxtLink :to="{name: `creator___${locale}`, params: {id: p.userId}}" style="text-decoration: underline; text-underline-offset: 4px; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
                   <template v-if="p.creatorHasAvatar && p.creatorAvatarUrl">
                     <img class="avatar" :src="p.creatorAvatarUrl" :alt="`Avatar de ${p.creatorUsername || 'utilisateur'}`" />
                   </template>
@@ -253,13 +276,15 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
                     </span>
                   </template>
 
-                  <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
+                  <span class="username">
+                    {{ p.creatorUsername || ('#'+p.userId) }}
+                  </span>
                 </NuxtLink>
               </span>
-              • {{ new Date(p.createdAt).toLocaleDateString() }}
+              • {{ convertDateFromLocal(p.createdAt) }}
             </div>
 
-            <p class="desc">{{ p.description ? ucFirst(p.description) : 'Description vide' }}</p>
+            <p class="desc">{{ p.description ? ucFirst(p.description) : $t('projects.index.empty-description') }}</p>
 
             <div class="tags">
               <span class="tag" v-for="t in p.tags" :key="t">#{{ t }}</span>
@@ -287,9 +312,13 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
       </ul>
 
       <div v-if="(data?.total || 0) > pageSize" class="pagination">
-        <button :disabled="page<=1" @click="go(page-1)">Précédent</button>
-        <span>Page {{ page }}</span>
-        <button :disabled="(data?.items?.length||0) < pageSize" @click="go(page+1)">Suivant</button>
+        <button :disabled="page<=1" @click="go(page-1)">
+          {{ $t('projects.index.pagination.next') }}
+        </button>
+        <span>{{ $t('projects.index.pagination.page') }} {{ page }}</span>
+        <button :disabled="(data?.items?.length||0) < pageSize" @click="go(page+1)">
+          {{ $t('projects.index.pagination.previous') }}
+        </button>
       </div>
     </div>
   </div>
