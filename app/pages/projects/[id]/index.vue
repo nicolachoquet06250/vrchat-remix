@@ -82,8 +82,29 @@ const offsetX = ref(0)
 const offsetY = ref(0)
 const isDragging = ref(false)
 const startDrag = ref<{x:number, y:number, ox:number, oy:number} | null>(null)
+// Track movement while a mouse button is pressed to differentiate click vs drag
+const pressedButton = ref<number | null>(null)
+const pressStartPos = ref<{x:number, y:number} | null>(null)
+const didMoveSincePress = ref(false)
+const moveThreshold = 4 // pixels
 const modalRoot = ref<HTMLElement | null>(null)
 const closeBtnRef = ref<HTMLButtonElement | null>(null)
+
+// Lock body scroll when the preview modal is open
+if (process.client) {
+  watch(isModalOpen, (open) => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+  })
+
+  onUnmounted(() => {
+    // Ensure scroll is restored if component gets destroyed while modal is open
+    document.body.style.overflow = ''
+  })
+}
 
 function openPreview() {
   isModalOpen.value = true
@@ -123,6 +144,11 @@ function zoomOut() {
 function onModalClick(e: MouseEvent) {
   // left click => zoom in
   if (e.button === 0) {
+    // If the user moved while pressing, do not zoom (it's a drag)
+    if (didMoveSincePress.value) {
+      didMoveSincePress.value = false
+      return
+    }
     zoomIn()
   }
 }
@@ -130,17 +156,38 @@ function onModalClick(e: MouseEvent) {
 function onModalContext(e: MouseEvent) {
   // right click => zoom out and close at min
   e.preventDefault()
+  // If the user moved while pressing, do not zoom (it's a drag)
+  if (didMoveSincePress.value) {
+    didMoveSincePress.value = false
+    return
+  }
   zoomOut()
 }
 
 function onMouseDown(e: MouseEvent) {
-  if (zoom.value <= 1) return
-  if (e.button !== 0) return
-  isDragging.value = true
-  startDrag.value = { x: e.clientX, y: e.clientY, ox: offsetX.value, oy: offsetY.value }
+  // Track press for movement (for both left/right, any zoom level)
+  pressedButton.value = e.button
+  pressStartPos.value = { x: e.clientX, y: e.clientY }
+  didMoveSincePress.value = false
+
+  // Start dragging (panning) only when zoomed in and left button
+  if (zoom.value > 1 && e.button === 0) {
+    isDragging.value = true
+    startDrag.value = { x: e.clientX, y: e.clientY, ox: offsetX.value, oy: offsetY.value }
+  }
 }
 
 function onMouseMove(e: MouseEvent) {
+  // Mark as moved if surpass threshold while a button is pressed
+  if (pressStartPos.value && pressedButton.value !== null) {
+    const mdx = e.clientX - pressStartPos.value.x
+    const mdy = e.clientY - pressStartPos.value.y
+    if (!didMoveSincePress.value && Math.hypot(mdx, mdy) >= moveThreshold) {
+      didMoveSincePress.value = true
+    }
+  }
+
+  // Apply panning only if dragging
   if (!isDragging.value || !startDrag.value) return
   const dx = e.clientX - startDrag.value.x
   const dy = e.clientY - startDrag.value.y
@@ -151,6 +198,8 @@ function onMouseMove(e: MouseEvent) {
 function onMouseUp() {
   isDragging.value = false
   startDrag.value = null
+  pressedButton.value = null
+  pressStartPos.value = null
 }
 
 function onKeyDown(e: KeyboardEvent) {
