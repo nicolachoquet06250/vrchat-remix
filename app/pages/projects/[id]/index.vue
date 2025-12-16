@@ -71,6 +71,126 @@ async function toggleFavorite() {
     toggling.value = false
   }
 }
+
+// ===== Image Preview Modal (zoom/pan) =====
+const isModalOpen = ref(false)
+const zoom = ref(1) // 1 to 3
+const minZoom = 1
+const maxZoom = 3
+const step = 0.5
+const offsetX = ref(0)
+const offsetY = ref(0)
+const isDragging = ref(false)
+const startDrag = ref<{x:number, y:number, ox:number, oy:number} | null>(null)
+const modalRoot = ref<HTMLElement | null>(null)
+const closeBtnRef = ref<HTMLButtonElement | null>(null)
+
+function openPreview() {
+  isModalOpen.value = true
+  zoom.value = 1
+  offsetX.value = 0
+  offsetY.value = 0
+  nextTick(() => {
+    // focus the dialog for accessibility
+    modalRoot.value?.focus()
+  })
+}
+
+function closePreview() {
+  isModalOpen.value = false
+}
+
+function onOverlayClick(e: MouseEvent) {
+  // Close when clicking outside the image container
+  if (e.target === modalRoot.value) {
+    closePreview()
+  }
+}
+
+function zoomIn() {
+  zoom.value = Math.min(maxZoom, +(zoom.value + step).toFixed(2))
+}
+
+function zoomOut() {
+  const next = Math.max(minZoom - 1, +(zoom.value - step).toFixed(2))
+  zoom.value = next
+  if (next < minZoom) {
+    // if already at min after this step, close
+    closePreview()
+  }
+}
+
+function onModalClick(e: MouseEvent) {
+  // left click => zoom in
+  if (e.button === 0) {
+    zoomIn()
+  }
+}
+
+function onModalContext(e: MouseEvent) {
+  // right click => zoom out and close at min
+  e.preventDefault()
+  zoomOut()
+}
+
+function onMouseDown(e: MouseEvent) {
+  if (zoom.value <= 1) return
+  if (e.button !== 0) return
+  isDragging.value = true
+  startDrag.value = { x: e.clientX, y: e.clientY, ox: offsetX.value, oy: offsetY.value }
+}
+
+function onMouseMove(e: MouseEvent) {
+  if (!isDragging.value || !startDrag.value) return
+  const dx = e.clientX - startDrag.value.x
+  const dy = e.clientY - startDrag.value.y
+  offsetX.value = startDrag.value.ox + dx
+  offsetY.value = startDrag.value.oy + dy
+}
+
+function onMouseUp() {
+  isDragging.value = false
+  startDrag.value = null
+}
+
+function onKeyDown(e: KeyboardEvent) {
+  if (!isModalOpen.value) return
+  if (e.key === 'Escape') {
+    e.preventDefault()
+    closePreview()
+    return
+  }
+  // Focus trap simple: keep focus within dialog
+  if (e.key === 'Tab') {
+    const root = modalRoot.value
+    if (!root) return
+    const focusable = root.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    if (focusable.length === 0) {
+      e.preventDefault()
+      root.focus()
+      return
+    }
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+    const active = document.activeElement as HTMLElement | null
+    if (!e.shiftKey && active === last) {
+      e.preventDefault()
+      first?.focus()
+    } else if (e.shiftKey && active === first) {
+      e.preventDefault()
+      last?.focus()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeyDown)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeyDown)
+})
 </script>
 
 <template>
@@ -144,6 +264,20 @@ async function toggleFavorite() {
       </div>
 
       <template v-if="hasImages">
+        <div style="display: flex; flex-direction: column; justify-content: flex-start; margin-left: 45px">
+          <span style="display: inline-flex; justify-content: flex-start; align-items: center; gap: 10px">
+            Click gauche :
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+              <path style="fill: light-dark(#000, #fff)" d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 176C258.7 176 248 186.7 248 200L248 248L200 248C186.7 248 176 258.7 176 272C176 285.3 186.7 296 200 296L248 296L248 344C248 357.3 258.7 368 272 368C285.3 368 296 357.3 296 344L296 296L344 296C357.3 296 368 285.3 368 272C368 258.7 357.3 248 344 248L296 248L296 200C296 186.7 285.3 176 272 176z"/>
+            </svg>
+          </span>
+          <span style="display: inline-flex; justify-content: flex-start; align-items: center; gap: 10px">
+            Click droit :
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+              <path style="fill: light-dark(#000, #fff)" d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM200 248C186.7 248 176 258.7 176 272C176 285.3 186.7 296 200 296L344 296C357.3 296 368 285.3 368 272C368 258.7 357.3 248 344 248L200 248z"/>
+            </svg>
+          </span>
+        </div>
         <div class="carousel">
           <button class="nav" @click="prev" aria-label="Précédent">‹</button>
           <div class="viewport">
@@ -154,6 +288,7 @@ async function toggleFavorite() {
                   :key="current"
                   :src="currentImg.forCarousel"
                   :alt="currentImg.fileName"
+                  @click="openPreview"
               />
             </Transition>
           </div>
@@ -170,6 +305,35 @@ async function toggleFavorite() {
           />
         </div>
       </template>
+      <!-- Zoom modal -->
+      <teleport to="body">
+        <div
+          v-if="isModalOpen && currentImg"
+          class="img-modal"
+          ref="modalRoot"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Agrandissement de l'image"
+          tabindex="-1"
+          @mousedown.self="onMouseDown"
+          @click.self="onOverlayClick"
+        >
+          <div class="modal-inner" @contextmenu="onModalContext" @click="onModalClick">
+            <img
+              class="modal-image"
+              :src="currentImg.forCarousel"
+              :alt="currentImg.fileName"
+              draggable="false"
+              @mousedown="onMouseDown"
+              @mousemove="onMouseMove"
+              @mouseup="onMouseUp"
+              @mouseleave="onMouseUp"
+              :style="{ transform: `translate(${offsetX}px, ${offsetY}px) scale(${zoom})` }"
+            />
+            <button ref="closeBtnRef" class="close-btn" type="button" @click="closePreview" aria-label="Fermer">✕</button>
+          </div>
+        </div>
+      </teleport>
     </div>
   </div>
 </template>
@@ -199,7 +363,7 @@ async function toggleFavorite() {
   align-items: center;
   justify-content: center;
 }
-.slide { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.slide { max-width: 100%; max-height: 100%; object-fit: contain; display: block; cursor: zoom-in }
 .nav {
   border: 1px solid light-dark(#eee, #3a3a3a);
   background-color: light-dark(#52c3ce, #181f29);
@@ -295,4 +459,49 @@ async function toggleFavorite() {
     transition-duration: 180ms;
   }
 }
+
+/* Image modal */
+.img-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: zoom-in;
+}
+.img-modal:has(.modal-image) { /* hint for supporting browsers */ }
+.modal-inner {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.modal-image {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  user-select: none;
+  will-change: transform;
+  transition: transform 120ms ease-out;
+  cursor: grab;
+}
+.modal-image:active { cursor: grabbing; }
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.close-btn:hover { background: rgba(255,255,255,.2); }
 </style>
