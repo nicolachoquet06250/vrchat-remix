@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const { user } = useSession()
 const router = useRouter()
-const { locale } = useI18n()
 
 definePageMeta({ name: 'admin-users' })
 
@@ -81,55 +80,75 @@ async function toggleRole(row: Row, makeModerator: boolean) {
     <div v-else-if="error">
       <p class="hint error">{{ $t('admin.users.errors.forbidden') }}</p>
     </div>
-    <div v-else>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>{{ $t('admin.users.columns.username') }}</th>
-            <th style="width: 160px; text-align: center">{{ $t('admin.users.columns.role') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="u in items" :key="u.id">
-            <td>
-              <div class="user">
-                <div class="avatar placeholder" v-if="u.hasAvatar">
-                  <img :src="u.avatarUrl" alt="avatar" class="avatar-img" loading="lazy">
+    <div v-else style="max-height: calc(100vh - 315px); overflow: auto; position: relative; margin-bottom: 30px;">
+      <div style="width: fit-content; min-width: calc(100vw - 90px); margin: 0 auto; overflow-x: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ $t('admin.users.columns.username') }}</th>
+              <th style="width: 160px; text-align: center">{{ $t('admin.users.columns.role') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="u in items" :key="u.id">
+              <td>
+                <div class="user">
+                  <div class="avatar placeholder" v-if="u.hasAvatar">
+                    <img :src="u.avatarUrl" alt="avatar" class="avatar-img" loading="lazy">
+                  </div>
+                  <div class="avatar placeholder" v-else>{{ (u.username || '#'+u.id).charAt(0).toUpperCase() }}</div>
+                  <div class="meta">
+                    <div class="name">{{ u.username }}</div>
+                    <div class="email">{{ u.email }}</div>
+                  </div>
                 </div>
-                <div class="avatar placeholder" v-else>{{ (u.username || '#'+u.id).charAt(0).toUpperCase() }}</div>
-                <div class="meta">
-                  <div class="name">{{ u.username }}</div>
-                  <div class="email">{{ u.email }}</div>
-                </div>
-              </div>
-            </td>
-            <td style="text-align: center">
-              <UiSwitch
-                v-if="u.role !== 'creator'"
-                :model-value="u.role === 'moderator'"
-                @update:modelValue="(val:boolean) => toggleRole(u, val)"
-                :label="{ before: 'user', after: 'moderator' }"
-              />
-              <span v-else style="color: rgba(255, 255, 255, .5); user-select: none;">
-                Super Admin
-              </span>
-            </td>
-          </tr>
-          <tr v-if="!items.length">
-            <td colspan="2" class="empty">{{ $t('admin.users.no-data') }}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="pagination">
-        <button class="btn" :disabled="page<=1" @click="page = Math.max(1, page-1)">
-          {{ $t('admin.users.pagination.previous') }}
-        </button>
-        <span class="muted">{{ $t('projects.index.pagination.page') }} {{ page }}</span>
-        <button class="btn" :disabled="(page*pageSize) >= total" @click="page = page + 1">
-          {{ $t('admin.users.pagination.next') }}
-        </button>
+              </td>
+              <td style="text-align: center">
+                <UiSwitch
+                    v-if="u.role !== 'creator'"
+                    :model-value="u.role === 'moderator'"
+                    @update:modelValue="(val:boolean) => toggleRole(u, val)"
+                    :label="{
+                      before: `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640' width='20' height='20'>
+                        <path style='fill: light-dark(#000, #fff)' d='M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z'/>
+                      </svg>`,
+                      after: `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640' width='20' height='20'>
+                        <path style='fill: light-dark(#000, #fff)' d='M320 64C324.6 64 329.2 65 333.4 66.9L521.8 146.8C543.8 156.1 560.2 177.8 560.1 204C559.6 303.2 518.8 484.7 346.5 567.2C329.8 575.2 310.4 575.2 293.7 567.2C121.3 484.7 80.6 303.2 80.1 204C80 177.8 96.4 156.1 118.4 146.8L306.7 66.9C310.9 65 315.4 64 320 64z'/>
+                      </svg>`
+                    }"
+                />
+                <span v-else style="user-select: none;">
+                  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640' width='20' height='20'>
+                    <path style='fill: light-dark(#000, #fff); opacity: .5;' d='M320 64C324.6 64 329.2 65 333.4 66.9L521.8 146.8C543.8 156.1 560.2 177.8 560.1 204C559.6 303.2 518.8 484.7 346.5 567.2C329.8 575.2 310.4 575.2 293.7 567.2C121.3 484.7 80.6 303.2 80.1 204C80 177.8 96.4 156.1 118.4 146.8L306.7 66.9C310.9 65 315.4 64 320 64z'/>
+                  </svg>
+                  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640' width='20' height='20'>
+                    <path style='fill: light-dark(#000, #fff); opacity: .5;' d='M320 64C324.6 64 329.2 65 333.4 66.9L521.8 146.8C543.8 156.1 560.2 177.8 560.1 204C559.6 303.2 518.8 484.7 346.5 567.2C329.8 575.2 310.4 575.2 293.7 567.2C121.3 484.7 80.6 303.2 80.1 204C80 177.8 96.4 156.1 118.4 146.8L306.7 66.9C310.9 65 315.4 64 320 64z'/>
+                  </svg>
+                  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640' width='20' height='20'>
+                    <path style='fill: light-dark(#000, #fff); opacity: .5;' d='M320 64C324.6 64 329.2 65 333.4 66.9L521.8 146.8C543.8 156.1 560.2 177.8 560.1 204C559.6 303.2 518.8 484.7 346.5 567.2C329.8 575.2 310.4 575.2 293.7 567.2C121.3 484.7 80.6 303.2 80.1 204C80 177.8 96.4 156.1 118.4 146.8L306.7 66.9C310.9 65 315.4 64 320 64z'/>
+                  </svg>
+                  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 640' width='20' height='20'>
+                    <path style='fill: light-dark(#000, #fff); opacity: .5;' d='M320 64C324.6 64 329.2 65 333.4 66.9L521.8 146.8C543.8 156.1 560.2 177.8 560.1 204C559.6 303.2 518.8 484.7 346.5 567.2C329.8 575.2 310.4 575.2 293.7 567.2C121.3 484.7 80.6 303.2 80.1 204C80 177.8 96.4 156.1 118.4 146.8L306.7 66.9C310.9 65 315.4 64 320 64z'/>
+                  </svg>
+                </span>
+              </td>
+            </tr>
+            <tr v-if="!items.length">
+              <td colspan="2" class="empty">{{ $t('admin.users.no-data') }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
+      <div class="pagination" style="width: calc(100vw - 70px); position: fixed; bottom: 20px;">
+          <button class="btn" :disabled="page<=1" @click="page = Math.max(1, page-1)">
+            {{ $t('admin.users.pagination.previous') }}
+          </button>
+          <span class="muted">{{ $t('projects.index.pagination.page') }} {{ page }}</span>
+          <button class="btn" :disabled="(page*pageSize) >= total" @click="page = page + 1">
+            {{ $t('admin.users.pagination.next') }}
+          </button>
+        </div>
     </div>
   </div>
 </template>
