@@ -201,7 +201,7 @@
       "search": { "placeholder": "Search by username or email" },
       "columns": {
         "username": "Username",
-        "role": "Role (moderator)"
+        "role": "Role"
       },
       "pagination": {
         "next": "Next",

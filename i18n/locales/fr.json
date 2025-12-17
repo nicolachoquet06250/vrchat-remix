@@ -201,7 +201,7 @@
       "search": { "placeholder": "Rechercher par pseudo ou e‑mail" },
       "columns": {
         "username": "Pseudo",
-        "role": "Rôle (modérateur)"
+        "role": "Rôle"
       },
       "pagination": {
         "next": "Suivant",
