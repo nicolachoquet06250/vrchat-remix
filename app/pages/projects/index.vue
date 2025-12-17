@@ -510,7 +510,19 @@ a:focus, button:focus {
 .avatar { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd; display: inline-block; }
 .avatar.placeholder { background: #f0f0f0; color: #666; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
 .username { font-weight: 500; }
-.desc { color: light-dark(#333, #fff); }
+.desc {
+  color: light-dark(#333, #fff);
+  display: inline-block;
+  width: 100%;
+  padding: 1%;
+  height: 77px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  /* Set this to the max number of lines you want */
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
 .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag {
   background: light-dark(#56cbd0, #131f29);
