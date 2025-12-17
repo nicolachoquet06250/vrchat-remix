@@ -297,6 +297,22 @@ onBeforeUnmount(() => {
             <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z"/>
           </svg>
         </NuxtLink>
+        <NuxtLink v-if="isOwner" :to="{ name: `project-analytics___${locale}`, params: { id } }" class="btn" :aria-labelledby="$t('analytics.title')" style="margin-left:8px" :title="$t('analytics.title')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M32 512C14.3 512 0 497.7 0 480C0 462.3 14.3 448 32 448L96 448C113.7 448 128 462.3 128 480C128 497.7 113.7 512 96 512L32 512zM224 384C206.3 384 192 369.7 192 352C192 334.3 206.3 320 224 320L288 320C305.7 320 320 334.3 320 352C320 369.7 305.7 384 288 384L224 384zM416 256C398.3 256 384 241.7 384 224C384 206.3 398.3 192 416 192L480 192C497.7 192 512 206.3 512 224C512 241.7 497.7 256 480 256L416 256zM544 64C561.7 64 576 78.3 576 96L576 480C576 515.3 547.3 544 512 544L128 544C92.7 544 64 515.3 64 480L64 160C64 124.7 92.7 96 128 96L544 96C544 78.3 558.3 64 576 64zM128 160L128 480L512 480 512 160 128 160z"/>
+          </svg>
+        </NuxtLink>
+      </div>
+
+      <!-- Total downloads metric (moved just under the title) -->
+      <div class="metrics" v-if="typeof (data as any)?.totalDownloads === 'number'">
+        <div class="metric">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="18" height="18" aria-hidden="true">
+            <path d="M352 96C352 78.3 337.7 64 320 64C302.3 64 288 78.3 288 96L288 306.7L246.6 265.3C234.1 252.8 213.8 252.8 201.3 265.3C188.8 277.8 188.8 298.1 201.3 310.6L297.3 406.6C309.8 419.1 330.1 419.1 342.6 406.6L438.6 310.6C451.1 298.1 451.1 277.8 438.6 265.3C426.1 252.8 405.8 252.8 393.3 265.3L352 306.7L352 96zM160 384C124.7 384 96 412.7 96 448L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 448C544 412.7 515.3 384 480 384L433.1 384L376.5 440.6C345.3 471.8 294.6 471.8 263.4 440.6L206.9 384L160 384zM464 440C477.3 440 488 450.7 488 464C488 477.3 477.3 488 464 488C450.7 488 440 477.3 440 464C440 450.7 450.7 440 464 440z"/>
+          </svg>
+          <span class="value">{{ ((data as any).totalDownloads || 0).toLocaleString(locale as any) }}</span>
+          <span class="label">{{ $t('project.index.total-downloads') }}</span>
+        </div>
       </div>
 
       <div class="meta">
@@ -538,6 +554,12 @@ onBeforeUnmount(() => {
   }
 }
 .btn.primary { background: #2b59c3; color: #fff; border-color: #2b59c3; }
+
+/* Metrics (downloads, etc.) */
+.metrics { margin-top: 6px; color: #666; font-size: 12px; }
+.metric { display: inline-flex; align-items: center; gap: 6px; }
+.metric .value { font-weight: 600; color: light-dark(#000, #fff); }
+.metric svg path { fill: light-dark(#000, #fff); opacity: .7 }
 
 /* Slide animations (plus douce/fluide) */
 /* Courbe d'animation plus naturelle et durée un peu plus longue */

@@ -2,8 +2,8 @@ import { z } from 'zod'
 import { getProjectWithTags } from '~~/server/utils/projects'
 import { getDb } from '~~/server/db/client'
 import { getSession } from '~~/server/utils/auth'
-import { and, eq } from 'drizzle-orm'
-import { projectFavorites, projects } from '~~/server/db/schema'
+import { eq, sql } from 'drizzle-orm'
+import { downloads, projects } from '~~/server/db/schema'
 
 const ParamsSchema = z.object({ id: z.coerce.number().int().min(1) })
 
@@ -35,5 +35,13 @@ export default defineEventHandler(async (event) => {
     })
     isFavorite = !!fav
   }
-  return { ...proj, isFavorite }
+  // Total downloads (public info)
+  const totalRows = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(downloads)
+    .where(eq(downloads.projectId, id))
+
+  const totalDownloads = Number((totalRows?.[0] as any)?.count || 0)
+
+  return { ...proj, isFavorite, totalDownloads }
 })
