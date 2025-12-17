@@ -136,7 +136,7 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 
 <template>
   <Head>
-    <Title>Liste des projets</Title>
+    <Title>VRC Remix - Liste des projets</Title>
   </Head>
 
   <div class="container">

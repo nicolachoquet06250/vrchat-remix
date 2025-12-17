@@ -16,7 +16,7 @@ useSeoMeta({
 <template>
   <div class="container">
     <Head>
-      <Title>Votre compte est activé</Title>
+      <Title>VRC Remix - Votre compte est activé</Title>
     </Head>
 
     <div class="header">
