@@ -86,6 +86,7 @@
       "left-click": "Left click",
       "right-click": "Right click",
       "download": "Download",
+      "total-downloads": "downloads",
       "add-to-favorites": "Add to favorites",
       "del-to-favorites": "Remove from favorites",
       "update": "Update",
@@ -218,5 +219,28 @@
         "forbidden": "Access denied. This page is restricted to the creator."
       }
     }
+  },
+  "analytics": {
+    "title": "Downloads analytics",
+    "description": "Monthly downloads (max 12 months) and yearly history",
+    "years": "Years",
+    "authenticated": "Signed in",
+    "anonymous": "Anonymous",
+    "total": "Total",
+    "view": "View analytics"
+  },
+  "months": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
   }
 }

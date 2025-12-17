@@ -1,6 +1,16 @@
 import { and, eq, inArray, like, sql } from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
-import {projects, projectTags, tags, users, projectImages, userAvatars, projectFavorites, type Project} from '~~/server/db/schema'
+import {
+  projects,
+  projectTags,
+  tags,
+  users,
+  projectImages,
+  userAvatars,
+  projectFavorites,
+  type Project,
+  downloads
+} from '~~/server/db/schema'
 import { z } from 'zod'
 import { getSession } from '~~/server/utils/auth'
 
@@ -19,7 +29,8 @@ type PaginationItem = Project & {
   creatorUsername?: string
   creatorHasAvatar?: boolean
   creatorAvatarUrl?: string | null
-  isFavorite?: boolean
+  isFavorite?: boolean,
+  totalDownloads: number
 };
 
 export default defineEventHandler(async (event): Promise<{
@@ -88,6 +99,21 @@ export default defineEventHandler(async (event): Promise<{
     .orderBy(projects.createdAt)
     .limit(pageSize)
     .offset(offset)
+
+  for (const i in rows) {
+    // Total downloads (public info)
+    const totalRows = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(downloads)
+        .where(eq(downloads.projectId, rows[i].id))
+
+    const totalDownloads = Number((totalRows?.[0] as any)?.count || 0)
+
+    rows[i] = {
+      ...rows[i],
+      totalDownloads
+    } as typeof rows[number] & { totalDownloads: number }
+  }
 
   const ids = rows.map(r => r.id)
   const userIds = Array.from(new Set(rows.map(r => r.userId)))
@@ -161,6 +187,7 @@ export default defineEventHandler(async (event): Promise<{
     creatorHasAvatar: hasAvatarByUserId.get(p.userId) || false,
     creatorAvatarUrl: hasAvatarByUserId.get(p.userId) ? `/api/users/${p.userId}/avatar` : null,
     isFavorite: favoriteSet.has(Number(p.id)),
+    totalDownloads: p.totalDownloads
   }))
 
   return { items: items as PaginationItem[], total, page, pageSize }

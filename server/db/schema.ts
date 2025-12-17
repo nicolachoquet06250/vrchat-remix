@@ -173,6 +173,21 @@ export const projectReports = mysqlTable('project_reports', {
   index('pr_reporter_idx').on(table.reporterUserId),
 ])
 
+// Analytics: téléchargements de projets
+export const downloads = mysqlTable('downloads', {
+  id: int('id').autoincrement().primaryKey(),
+  projectId: int('project_id').notNull(),
+  userId: int('user_id'), // null si anonyme
+  // 0/1 pour compat MySQL int
+  isAuthenticated: int('is_authenticated').notNull().default(0),
+  createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+}, (table) => [
+  index('dl_project_idx').on(table.projectId),
+  index('dl_user_idx').on(table.userId),
+  index('dl_created_idx').on(table.createdAt),
+])
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Project = typeof projects.$inferSelect
@@ -184,3 +199,4 @@ export type NewProjectImage = typeof projectImages.$inferInsert
 export type UserAvatar = typeof userAvatars.$inferSelect
 export type SavedSearch = typeof savedSearches.$inferSelect
 export type ProjectReport = typeof projectReports.$inferSelect
+export type Download = typeof downloads.$inferSelect
