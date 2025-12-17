@@ -32,6 +32,12 @@
     "pseudo": "Pseudo",
     "email": "Email",
     "save": "Save",
+    "disable": {
+      "button": "Disable this profile",
+      "confirm": "Are you sure you want to disable this profile?",
+      "success": "Profile has been disabled.",
+      "error": "Unable to disable the profile right now."
+    },
     "change-password": "Change password",
     "current-password": "Current password",
     "new-password": "New password",
