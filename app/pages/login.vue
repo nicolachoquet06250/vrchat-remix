@@ -55,7 +55,7 @@ async function onResend() {
 
 <template>
   <Head>
-    <Title>{{ $t('login.tab.title') }}</Title>
+    <Title>VRC Remix - {{ $t('login.tab.title') }}</Title>
   </Head>
 
   <div class="container">

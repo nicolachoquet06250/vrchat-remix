@@ -29,7 +29,7 @@ async function onResend() {
 <template>
   <div class="container">
     <Head>
-      <Title>Lien de vérification invalide</Title>
+      <Title>VRC Remix - Lien de vérification invalide</Title>
     </Head>
 
     <div class="header">

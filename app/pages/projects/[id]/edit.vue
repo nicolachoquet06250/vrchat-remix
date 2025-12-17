@@ -196,7 +196,7 @@ async function onDeleteImage(imageId: number) {
 
 <template>
   <Head>
-    <Title>{{ $t('project.edit.title') }} "{{data!.name}}"</Title>
+    <Title>VRC Remix - {{ $t('project.edit.title') }} "{{data!.name}}"</Title>
   </Head>
 
   <div class="container">

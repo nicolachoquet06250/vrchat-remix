@@ -155,7 +155,7 @@ const lang = computed({
 
 <template>
   <Head>
-    <Title>Profile - {{ user?.username }}</Title>
+    <Title>VRC Remix - Profile - {{ user?.username }}</Title>
   </Head>
 
   <div class="container">

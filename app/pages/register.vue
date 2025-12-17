@@ -71,7 +71,7 @@ function openFilePicker() {
 <template>
   <div class="container">
     <Head>
-      <Title>{{ $t('register.tab.title') }}</Title>
+      <Title>VRC Remix - {{ $t('register.tab.title') }}</Title>
     </Head>
 
     <div class="header">

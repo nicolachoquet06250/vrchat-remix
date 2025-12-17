@@ -282,7 +282,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Head>
-    <Title>{{ucFirst(data!.name)}}</Title>
+    <Title>VRC Remix - {{ucFirst(data!.name)}}</Title>
   </Head>
 
   <div class="container">

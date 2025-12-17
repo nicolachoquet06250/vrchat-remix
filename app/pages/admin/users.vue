@@ -59,7 +59,7 @@ async function toggleRole(row: Row, makeModerator: boolean) {
 
 <template>
   <Head>
-    <Title>Admin · {{ $t('admin.users.title') }}</Title>
+    <Title>VRC Remix - Admin · {{ $t('admin.users.title') }}</Title>
   </Head>
 
   <div class="container">

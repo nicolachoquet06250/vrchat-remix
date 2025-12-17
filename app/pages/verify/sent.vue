@@ -32,7 +32,7 @@ async function resend() {
 <template>
   <div class="container">
     <Head>
-      <Title>Vérifiez votre e‑mail</Title>
+      <Title>VRC Remix - Vérifiez votre e‑mail</Title>
     </Head>
 
     <div class="header">

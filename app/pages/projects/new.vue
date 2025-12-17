@@ -115,7 +115,7 @@ async function onSubmit() {
 
 <template>
   <Head>
-    <Title>{{ $t('project.create.tab.title') }}</Title>
+    <Title>VRC Remix - {{ $t('project.create.tab.title') }}</Title>
   </Head>
 
   <div class="container">
