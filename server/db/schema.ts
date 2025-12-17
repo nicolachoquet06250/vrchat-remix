@@ -19,6 +19,10 @@ export const users = mysqlTable('users', {
   email: varchar('email', { length: 255 }).notNull(),
   username: varchar('username', { length: 100 }).notNull(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  // Rôle pour modération: 'user' (défaut), 'moderator', 'creator'
+  role: varchar('role', { length: 20 }).notNull().default('user'),
+  // Désactivation de profil par un creator
+  disabledAt: datetime('disabled_at', { mode: 'date', fsp: 3 }),
   // Email verification flow
   emailVerifiedAt: datetime('email_verified_at', { mode: 'date', fsp: 3 }),
   verificationToken: varchar('verification_token', { length: 255 }),
@@ -30,10 +34,10 @@ export const users = mysqlTable('users', {
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
   updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-}, (table) => ({
-  emailIdx: unique('users_email_unique').on(table.email),
-  usernameIdx: unique('users_username_unique').on(table.username),
-}))
+}, (table) => [
+  unique('users_email_unique').on(table.email),
+  unique('users_username_unique').on(table.username),
+])
 
 export const projects = mysqlTable('projects', {
   id: int('id').autoincrement().primaryKey(),
@@ -43,6 +47,9 @@ export const projects = mysqlTable('projects', {
   description: text('description'),
   // Visibilité publique/privée
   isPublic: int('is_public').notNull().default(1),
+  // Compteur de privatisations effectuées par un modérateur
+  privateStrikeCount: int('private_strike_count').notNull().default(0),
+  lastPrivatedAt: datetime('last_privated_at', { mode: 'date', fsp: 3 }),
   // Nouveau stockage fichier (zip) en base
   fileName: varchar('file_name', { length: 255 }),
   fileType: varchar('file_type', { length: 100 }),
@@ -52,10 +59,10 @@ export const projects = mysqlTable('projects', {
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
   updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-}, (table) => ({
-  userIdx: index('projects_user_idx').on(table.userId),
-  nameIdx: index('projects_name_idx').on(table.name),
-}))
+}, (table) => [
+  index('projects_user_idx').on(table.userId),
+  index('projects_name_idx').on(table.name),
+])
 
 // Images associées aux projets
 export const projectImages = mysqlTable('project_images', {
@@ -67,9 +74,9 @@ export const projectImages = mysqlTable('project_images', {
   fileData: longblob('file_data', { length: 16_000_000 }),
   createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-}, (table) => ({
-  projectIdx: index('project_images_project_idx').on(table.projectId),
-}))
+}, (table) => [
+  index('project_images_project_idx').on(table.projectId),
+])
 
 // Avatar utilisateur dans une table séparée, 1:1 avec users
 export const userAvatars = mysqlTable('user_avatars', {
@@ -84,25 +91,25 @@ export const userAvatars = mysqlTable('user_avatars', {
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
   updatedAt: datetime('updated_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-}, (table) => ({
-  userUnique: unique('user_avatars_user_unique').on(table.userId),
-}))
+}, (table) => [
+  unique('user_avatars_user_unique').on(table.userId),
+])
 
 export const tags = mysqlTable('tags', {
   id: int('id').autoincrement().primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
-}, (table) => ({
-  nameUnique: unique('tags_name_unique').on(table.name),
-}))
+}, (table) => [
+  unique('tags_name_unique').on(table.name),
+])
 
 export const projectTags = mysqlTable('project_tags', {
   projectId: int('project_id').notNull(),
   tagId: int('tag_id').notNull(),
-}, table => ({
-  ptUnique: unique('project_tag_unique').on(table.projectId, table.tagId),
-  projectIdx: index('pt_project_idx').on(table.projectId),
-  tagIdx: index('pt_tag_idx').on(table.tagId),
-}))
+}, table => [
+  unique('project_tag_unique').on(table.projectId, table.tagId),
+  index('pt_project_idx').on(table.projectId),
+  index('pt_tag_idx').on(table.tagId),
+])
 
 // Favoris projets par utilisateur
 export const projectFavorites = mysqlTable('project_favorites', {
@@ -110,13 +117,13 @@ export const projectFavorites = mysqlTable('project_favorites', {
   projectId: int('project_id').notNull(),
   createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-}, (table) => ({
-  uniquePerUser: unique('project_fav_user_project_unique').on(table.userId, table.projectId),
-  userIdx: index('pf_user_idx').on(table.userId),
-  projectIdx: index('pf_project_idx').on(table.projectId),
-}))
+}, (table) => [
+  unique('project_fav_user_project_unique').on(table.userId, table.projectId),
+  index('pf_user_idx').on(table.userId),
+  index('pf_project_idx').on(table.projectId),
+])
 
-export const usersRelations = relations(users, ({ many, one }) => ({
+export const usersRelations = relations(users, ({ many }) => ({
   avatar: many(userAvatars),
 }))
 
@@ -148,10 +155,23 @@ export const savedSearches = mysqlTable('saved_searches', {
   query: varchar('query', { length: 200 }).notNull(),
   createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
       .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
-}, (table) => ({
-  userIdx: index('ss_user_idx').on(table.userId),
-  uniquePerUser: unique('ss_user_type_query_unique').on(table.userId, table.type, table.query),
-}))
+}, (table) => [
+  index('ss_user_idx').on(table.userId),
+  unique('ss_user_type_query_unique').on(table.userId, table.type, table.query),
+])
+
+// Signalements de projets par des utilisateurs
+export const projectReports = mysqlTable('project_reports', {
+  id: int('id').autoincrement().primaryKey(),
+  projectId: int('project_id').notNull(),
+  reporterUserId: int('reporter_user_id').notNull(),
+  reason: varchar('reason', { length: 500 }),
+  createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+}, (table) => [
+  index('pr_project_idx').on(table.projectId),
+  index('pr_reporter_idx').on(table.reporterUserId),
+])
 
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -163,3 +183,4 @@ export type ProjectImage = typeof projectImages.$inferSelect
 export type NewProjectImage = typeof projectImages.$inferInsert
 export type UserAvatar = typeof userAvatars.$inferSelect
 export type SavedSearch = typeof savedSearches.$inferSelect
+export type ProjectReport = typeof projectReports.$inferSelect

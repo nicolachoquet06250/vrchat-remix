@@ -605,7 +605,6 @@ type Author = {
 };
 
 export default defineEventHandler(async () => {
-  const config = useRuntimeConfig();
   const owner = process.env.NUXT_PUBLIC_GITHUB_OWNER as string;
   const repo = process.env.NUXT_PUBLIC_GITHUB_REPO as string;
   const token = process.env.NUXT_PUBLIC_GITHUB_TOKEN as string;
@@ -644,12 +643,7 @@ export default defineEventHandler(async () => {
       const mergeSha = merged.merge_commit_sha;
       let commitMessage: string | null = null
       if (mergeSha) {
-        try {
-          const commit = await $fetch<Commit>(`https://api.github.com/repos/${owner}/${repo}/commits/${mergeSha}`, { headers })
-          commitMessage = commit?.commit?.message ?? null
-        } catch (_) {
-          // ignore commit fetch errors
-        }
+        commitMessage = merged.body;
       }
 
       return {

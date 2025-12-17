@@ -5,7 +5,7 @@ import { requireAuth } from '~~/server/utils/auth'
 import { getProjectWithTags, setProjectTags } from '~~/server/utils/projects'
 import { savedSearches, users } from '~~/server/db/schema'
 import { sendNewProjectAlert } from '~~/server/utils/mail'
-import {inArray} from "drizzle-orm";
+import {and, desc, eq, inArray} from "drizzle-orm";
 
 const FieldsSchema = z.object({
   name: z.string().min(3).max(200),
@@ -98,8 +98,11 @@ export default defineEventHandler(async (event) => {
   })
 
   const created = await db.query.projects.findFirst({
-    where: (p, { and, eq }) => and(eq(p.userId, Number(session.sub)), eq(p.name, name)),
-    orderBy: (p, { desc }) => [desc(p.id)],
+    where: and(
+        eq(projects.userId, Number(session.sub)),
+        eq(projects.name, name)
+    ),
+    orderBy: [desc(projects.id)],
   })
   if (!created) throw createError({ statusCode: 500, statusMessage: 'Failed to create project' })
 

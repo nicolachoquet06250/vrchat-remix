@@ -54,6 +54,7 @@ const isOwner = computed(() => {
 
 const toggling = ref(false)
 const favMsg = ref<string | null>(null)
+const modMsg = ref<string | null>(null)
 const isFavorite = computed(() => Boolean(data.value && (data.value as any).isFavorite))
 
 async function toggleFavorite() {
@@ -72,6 +73,40 @@ async function toggleFavorite() {
     setTimeout(() => (favMsg.value = null), 2500)
   } finally {
     toggling.value = false
+  }
+}
+
+async function reportProject() {
+  if (!user.value) return
+  const reason = prompt('Pourquoi signalez-vous ce projet ?') || undefined
+  try {
+    await $fetch(`/api/projects/${id}/report`, { method: 'POST', body: { reason } })
+    modMsg.value = String($t('project.index.reported'))
+  } catch (e: any) {
+    modMsg.value = e?.data?.statusMessage || 'Impossible de signaler pour le moment'
+  } finally {
+    setTimeout(() => (modMsg.value = null), 2500)
+  }
+}
+
+const isModeratorOrCreator = computed(() => user.value && (user.value.role === 'moderator' || user.value.role === 'creator'))
+
+async function makePrivate() {
+  if (!isModeratorOrCreator.value) return
+  try {
+    const res: any = await $fetch(`/api/projects/${id}/private`, { method: 'POST' })
+    if (res?.deleted) {
+      modMsg.value = String($t('project.index.deleted'))
+      // Redirect to projects list after deletion
+      setTimeout(() => navigateTo('/projects'), 1500)
+      return
+    }
+    modMsg.value = String($t('project.index.privated'))
+    await refresh()
+  } catch (e: any) {
+    modMsg.value = e?.data?.statusMessage || 'Action impossible pour le moment'
+  } finally {
+    setTimeout(() => (modMsg.value = null), 2500)
   }
 }
 
@@ -257,8 +292,10 @@ onBeforeUnmount(() => {
       <div class="header">
         <h1 class="title">{{ ucFirst(data!.name) }}</h1>
         <div class="spacer" />
-        <NuxtLink v-if="isOwner" :to="{name: `edit-project___${locale}`, params: {id}}" class="btn">
-          {{ $t('project.index.update') }}
+        <NuxtLink v-if="isOwner" :to="{name: `edit-project___${locale}`, params: {id}}" class="btn" :aria-labelledby="$t('project.index.update')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z"/>
+          </svg>
         </NuxtLink>
       </div>
 
@@ -282,6 +319,41 @@ onBeforeUnmount(() => {
         • {{ new Date(data!.createdAt).toLocaleString(locale) }}
       </div>
 
+      <div style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 5px;">
+        <button
+            v-if="user && data"
+            class="btn"
+            :disabled="toggling"
+            type="button"
+            @click="toggleFavorite"
+            :aria-pressed="isFavorite"
+            :aria-labelledby="isFavorite ? $t('project.index.del-to-favorites') : $t('project.index.add-to-favorites')"
+        >
+          <template v-if="isFavorite">
+            <svg v-if="isFavorite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+              <path d="M192 64C156.7 64 128 92.7 128 128L128 544C128 555.5 134.2 566.2 144.2 571.8C154.2 577.4 166.5 577.3 176.4 571.4L320 485.3L463.5 571.4C473.4 577.3 485.7 577.5 495.7 571.8C505.7 566.1 512 555.5 512 544L512 128C512 92.7 483.3 64 448 64L192 64z"/>
+            </svg>
+          </template>
+          <template v-else>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+              <path d="M128 128C128 92.7 156.7 64 192 64L448 64C483.3 64 512 92.7 512 128L512 545.1C512 570.7 483.5 585.9 462.2 571.7L320 476.8L177.8 571.7C156.5 585.9 128 570.6 128 545.1L128 128zM192 112C183.2 112 176 119.2 176 128L176 515.2L293.4 437C309.5 426.3 330.5 426.3 346.6 437L464 515.2L464 128C464 119.2 456.8 112 448 112L192 112z"/>
+            </svg>
+          </template>
+        </button>
+
+        <button v-if="user" class="btn" type="button" @click="reportProject" :aria-labelledby="$t('project.index.report')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M320 64C334.7 64 348.2 72.1 355.2 85L571.2 485C577.9 497.4 577.6 512.4 570.4 524.5C563.2 536.6 550.1 544 536 544L104 544C89.9 544 76.8 536.6 69.6 524.5C62.4 512.4 62.1 497.4 68.8 485L284.8 85C291.8 72.1 305.3 64 320 64zM320 416C302.3 416 288 430.3 288 448C288 465.7 302.3 480 320 480C337.7 480 352 465.7 352 448C352 430.3 337.7 416 320 416zM320 224C301.8 224 287.3 239.5 288.6 257.7L296 361.7C296.9 374.2 307.4 384 319.9 384C332.5 384 342.9 374.3 343.8 361.7L351.2 257.7C352.5 239.5 338.1 224 319.8 224z"/>
+          </svg>
+        </button>
+
+        <button v-if="isModeratorOrCreator" class="btn warning" type="button" @click="makePrivate" :aria-labelledby="$t('project.index.mark-private')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M256 160L256 224L384 224L384 160C384 124.7 355.3 96 320 96C284.7 96 256 124.7 256 160zM192 224L192 160C192 89.3 249.3 32 320 32C390.7 32 448 89.3 448 160L448 224C483.3 224 512 252.7 512 288L512 512C512 547.3 483.3 576 448 576L192 576C156.7 576 128 547.3 128 512L128 288C128 252.7 156.7 224 192 224z"/>
+          </svg>
+        </button>
+      </div>
+
       <p class="desc">{{ ucFirst(data!.description ?? '') }}</p>
 
       <div class="tags" v-if="data!.tags.length > 0">
@@ -292,29 +364,14 @@ onBeforeUnmount(() => {
         <div>{{ $t('project.index.file') }}: {{ data!.fileName }} <span v-if="data!.fileSize">({{ Math.round(data!.fileSize!/1024) }} Ko)</span></div>
       </div>
       <div class="actions">
-        <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">{{ $t('project.index.download') }}</a>
-        <button
-          v-if="user && data"
-          class="btn"
-          :disabled="toggling"
-          type="button"
-          @click="toggleFavorite"
-          :aria-pressed="isFavorite"
-        >
-          <template v-if="isFavorite">
-            <svg v-if="isFavorite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
-              <path d="M192 64C156.7 64 128 92.7 128 128L128 544C128 555.5 134.2 566.2 144.2 571.8C154.2 577.4 166.5 577.3 176.4 571.4L320 485.3L463.5 571.4C473.4 577.3 485.7 577.5 495.7 571.8C505.7 566.1 512 555.5 512 544L512 128C512 92.7 483.3 64 448 64L192 64z"/>
-            </svg>
-            {{ $t('project.index.del-to-favorites') }}
-          </template>
-          <template v-else>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
-              <path d="M128 128C128 92.7 156.7 64 192 64L448 64C483.3 64 512 92.7 512 128L512 545.1C512 570.7 483.5 585.9 462.2 571.7L320 476.8L177.8 571.7C156.5 585.9 128 570.6 128 545.1L128 128zM192 112C183.2 112 176 119.2 176 128L176 515.2L293.4 437C309.5 426.3 330.5 426.3 346.6 437L464 515.2L464 128C464 119.2 456.8 112 448 112L192 112z"/>
-            </svg>
-            {{ $t('project.index.add-to-favorites') }}
-          </template>
-        </button>
+        <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M352 96C352 78.3 337.7 64 320 64C302.3 64 288 78.3 288 96L288 306.7L246.6 265.3C234.1 252.8 213.8 252.8 201.3 265.3C188.8 277.8 188.8 298.1 201.3 310.6L297.3 406.6C309.8 419.1 330.1 419.1 342.6 406.6L438.6 310.6C451.1 298.1 451.1 277.8 438.6 265.3C426.1 252.8 405.8 252.8 393.3 265.3L352 306.7L352 96zM160 384C124.7 384 96 412.7 96 448L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 448C544 412.7 515.3 384 480 384L433.1 384L376.5 440.6C345.3 471.8 294.6 471.8 263.4 440.6L206.9 384L160 384zM464 440C477.3 440 488 450.7 488 464C488 477.3 477.3 488 464 488C450.7 488 440 477.3 440 464C440 450.7 450.7 440 464 440z"/>
+          </svg>
+          {{ $t('project.index.download') }}
+        </a>
         <span v-if="favMsg" class="hint error">{{ favMsg }}</span>
+        <span v-if="modMsg" class="hint">{{ modMsg }}</span>
       </div>
 
       <template v-if="hasImages">
@@ -394,7 +451,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .container { display: grid; gap: 16px; }
-.card { border: 1px solid #eee; border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
+.card { border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
 .header { display: flex; align-items: center; gap: 8px; }
 .spacer { flex: 1; }
 .title { margin: 0; }
@@ -476,7 +533,7 @@ onBeforeUnmount(() => {
     color: light-dark(#000, #000);
 
     > svg > path {
-      fill: light-dark(#fff, #000);
+      fill: light-dark(#000, #000);
     }
   }
 }

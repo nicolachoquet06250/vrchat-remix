@@ -219,3 +219,42 @@ export async function sendProjectUpdatedEmail(to: string, params: { projectId: n
   const t = getTransporter()
   return t?.sendMail({ from, to, subject, text, html })
 }
+
+// --- Moderation related mails (simple templates) ---
+export async function sendProjectReportedEmail(to: string, params: { projectId: number, projectName: string, reporter: string, reason?: string }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+  const projectUrl = `${appUrl}/projects/${params.projectId}`
+  const subject = `${appName} – Projet signalé: ${params.projectName}`
+  const text = `Un projet a été signalé.\n\nProjet: ${params.projectName} (#${params.projectId})\nLien: ${projectUrl}\nSignalé par: ${params.reporter}\nRaison: ${params.reason || 'non précisée'}`
+  const html = `<!doctype html><html lang="fr"><body><p>Un projet a été signalé.</p><ul><li><b>Projet:</b> ${params.projectName} (#${params.projectId})</li><li><b>Lien:</b> <a href="${projectUrl}">${projectUrl}</a></li><li><b>Signalé par:</b> ${params.reporter}</li><li><b>Raison:</b> ${params.reason || 'non précisée'}</li></ul></body></html>`
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendProjectPrivateWarningEmail(to: string, params: { projectId: number, projectName: string, strikes: number }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+  const projectUrl = `${appUrl}/projects/${params.projectId}`
+  const subject = `${appName} – Avertissement: votre projet a été passé en privé (${params.strikes}/3)`
+  const text = `Votre projet "${params.projectName}" a été passé en privé par la modération (${params.strikes}/3).\nA la troisième fois, il sera supprimé définitivement.\nLien: ${projectUrl}`
+  const html = `<!doctype html><html lang="fr"><body><p>Votre projet <b>${params.projectName}</b> a été passé en privé par la modération (${params.strikes}/3).</p><p>A la troisième fois, il sera supprimé définitivement.</p><p><a href="${projectUrl}">Voir le projet</a></p></body></html>`
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendProjectDeletedEmail(to: string, params: { projectId: number, projectName: string }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+  const subject = `${appName} – Votre projet a été supprimé`
+  const text = `Votre projet "${params.projectName}" (#${params.projectId}) a été supprimé définitivement suite à 3 mises en privé par la modération.`
+  const html = `<!doctype html><html lang="fr"><body><p>Votre projet <b>${params.projectName}</b> (#${params.projectId}) a été supprimé définitivement suite à 3 mises en privé par la modération.</p></body></html>`
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}

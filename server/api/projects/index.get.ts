@@ -46,7 +46,9 @@ export default defineEventHandler(async (event): Promise<{
   if (tag) {
     const query = db.query;
     if ('tags' in query) {
-      const tagRow = await query.tags.findFirst({where: (t, {eq}) => eq(t.name, tag.toLowerCase())})
+      const tagRow = await query.tags.findFirst({
+        where: eq(tags.name, tag.toLowerCase())
+      })
       if (!tagRow) {
         return {items: [], total: 0, page, pageSize}
       }

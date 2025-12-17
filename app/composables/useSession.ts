@@ -5,6 +5,7 @@ export type SessionUser = {
   createdAt: string
   hasAvatar?: boolean
   avatarUrl?: string | null
+  role?: 'user'|'moderator'|'creator'
 }
 
 export function useSession() {

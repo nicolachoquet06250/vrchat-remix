@@ -82,7 +82,12 @@
       "add-to-favorites": "Ajouter aux favoris",
       "del-to-favorites": "Retirer des favoris",
       "update": "Modifier",
-      "not-found": "Introuvable"
+      "not-found": "Introuvable",
+      "report": "Signaler",
+      "mark-private": "Passer en privé",
+      "reported": "Merci, votre signalement a été envoyé.",
+      "privated": "Le projet a été passé en privé.",
+      "deleted": "Le projet a été supprimé (3e mise en privé)."
     },
     "edit": {
       "title": "Modifier le projet",
@@ -189,5 +194,23 @@
     "already-account": "J'ai déjà un compte",
     "creation": "Création...",
     "create-account": "Créer un compte"
+  },
+  "admin": {
+    "users": {
+      "title": "Administration",
+      "search": { "placeholder": "Rechercher par pseudo ou e‑mail" },
+      "columns": {
+        "username": "Pseudo",
+        "role": "Rôle (modérateur)"
+      },
+      "pagination": {
+        "next": "Suivant",
+        "previous": "Précédent"
+      },
+      "no-data": "Aucun utilisateur trouvé.",
+      "errors": {
+        "forbidden": "Accès refusé. Cette page est réservée au creator."
+      }
+    }
   }
 }

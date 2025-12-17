@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     const avatarRow = await db.select({ id: userAvatars.id }).from(userAvatars).where(eq(userAvatars.userId, id)).limit(1)
     const hasAvatar = avatarRow.length > 0
     const avatarUrl = hasAvatar ? `/api/users/${user.id}/avatar` : null
-    return {id: user.id, email: user.email, username: user.username, createdAt: user.createdAt, hasAvatar, avatarUrl}
+    return {id: user.id, email: user.email, username: user.username, createdAt: user.createdAt, hasAvatar, avatarUrl, role: (user as any).role}
   }
 
   return query;
