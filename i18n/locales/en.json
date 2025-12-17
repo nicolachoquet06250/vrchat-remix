@@ -83,7 +83,12 @@
       "add-to-favorites": "Add to favorites",
       "del-to-favorites": "Remove from favorites",
       "update": "Update",
-      "not-found": "Not found"
+      "not-found": "Not found",
+      "report": "Report",
+      "mark-private": "Make private",
+      "reported": "Thanks, your report has been sent.",
+      "privated": "The project has been set to private.",
+      "deleted": "The project was deleted (3rd private)."
     },
     "edit": {
       "title": "Update project",
@@ -189,5 +194,23 @@
     "already-account": "Already have an account",
     "creation": "Creation...",
     "create-account": "Create an account"
+  },
+  "admin": {
+    "users": {
+      "title": "Administration",
+      "search": { "placeholder": "Search by username or email" },
+      "columns": {
+        "username": "Username",
+        "role": "Role (moderator)"
+      },
+      "pagination": {
+        "next": "Next",
+        "previous": "Previous"
+      },
+      "no-data": "No users found.",
+      "errors": {
+        "forbidden": "Access denied. This page is restricted to the creator."
+      }
+    }
   }
 }

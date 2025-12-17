@@ -166,6 +166,15 @@ const lang = computed({
 
     <div v-if="user" class="form">
       <div class="actions">
+        <NuxtLink v-if="user?.role === 'creator'" class="link" :to="{ name: `admin-users___${locale}` }">
+          <!-- simple shield icon -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
+            <path d="M320 32C320 32 256 96 128 96L128 320C128 437.3 206.5 540.6 320 573.3C433.5 540.6 512 437.3 512 320L512 96C384 96 320 32 320 32z"/>
+          </svg>
+          {{ $t('admin.users.title') }}
+        </NuxtLink>
+      </div>
+      <div class="actions">
         <NuxtLink class="link" :to="{
           name: meta.previousRoute?.name ?? `root___${locale}`,
           params: meta.previousRoute?.params ?? {},
@@ -187,8 +196,8 @@ const lang = computed({
         <UiSwitch
             v-model="lang"
             :label="{
-            before: `<img src='${FR}' style='width: 30px; height: 30px;'>`,
-            after: `<img src='${US}' style='width: 30px; height: 30px;'>`
+            before: `<img src='${FR}' style='width: 30px; height: 30px;' alt='France'>`,
+            after: `<img src='${US}' style='width: 30px; height: 30px;' alt='United-States'>`
         }"
         />
       </div>

@@ -1,6 +1,8 @@
+import {eq, or} from "drizzle-orm"
 import { z } from 'zod'
 import { getDb } from '~~/server/db/client'
 import { verifyPassword, createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
+import {users} from "~~/server/db/schema";
 
 const LoginSchema = z.object({
   emailOrUsername: z.string().min(3),
@@ -19,10 +21,16 @@ export default defineEventHandler( async (event) => {
   const query = db.query;
   if ('users' in query) {
     const user = await query.users.findFirst({
-      where: (u, { eq, or }) => or(eq(u.email, emailOrUsername), eq(u.username, emailOrUsername)),
+      where: or(
+          eq(users.email, emailOrUsername),
+          eq(users.username, emailOrUsername)
+      ),
     })
     if (!user) {
       throw createError({ statusCode: 401, statusMessage: 'Invalid credentials' })
+    }
+    if ((user as any).disabledAt) {
+      throw createError({ statusCode: 403, statusMessage: 'Votre compte est désactivé.' })
     }
     const ok = await verifyPassword(user.passwordHash, password)
     if (!ok) {
