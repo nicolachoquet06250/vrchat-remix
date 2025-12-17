@@ -6,6 +6,8 @@ const confirmPassword = ref('')
 const { register, error } = useSession()
 const router = useRouter()
 const { uploadAvatar, error: avatarError, uploading } = useAvatar()
+const {locale} = useI18n()
+
 const submitting = ref(false)
 
 definePageMeta({
@@ -69,12 +71,12 @@ function openFilePicker() {
 <template>
   <div class="container">
     <Head>
-      <Title>Inscription</Title>
+      <Title>{{ $t('register.tab.title') }}</Title>
     </Head>
 
     <div class="header">
-      <h1>Inscription</h1>
-      <p class="hint">Créez votre compte pour commencer</p>
+      <h1>{{ $t('register.title') }}</h1>
+      <p class="hint">{{ $t('register.subtitle') }}</p>
     </div>
 
     <form @submit.prevent="onSubmit" class="form" novalidate>
@@ -86,7 +88,7 @@ function openFilePicker() {
           required
           autocomplete="email"
         />
-        <span class="label-text">Email</span>
+        <span class="label-text">{{ $t('register.email') }}</span>
       </label>
 
       <label class="float">
@@ -99,7 +101,7 @@ function openFilePicker() {
           maxlength="32"
           autocomplete="username"
         />
-        <span class="label-text">Pseudo</span>
+        <span class="label-text">{{ $t('register.pseudo') }}</span>
       </label>
 
       <label class="float">
@@ -111,7 +113,7 @@ function openFilePicker() {
           minlength="8"
           autocomplete="new-password"
         />
-        <span class="label-text">Mot de passe</span>
+        <span class="label-text">{{ $t('register.password') }}</span>
       </label>
 
       <label class="float">
@@ -123,12 +125,12 @@ function openFilePicker() {
           minlength="8"
           autocomplete="new-password"
         />
-        <span class="label-text">Confirmer le mot de passe</span>
+        <span class="label-text">{{ $t('register.confirm-password') }}</span>
       </label>
 
       <section class="avatar-field">
         <div class="file-field">
-          <span class="file-label">Avatar (optionnel)</span>
+          <span class="file-label">{{ $t('register.avatar') }}</span>
           <div class="file-row">
             <input
               ref="avatarInput"
@@ -138,22 +140,22 @@ function openFilePicker() {
               @change="onPick"
             />
             <button type="button" class="file-btn" @click="openFilePicker" :disabled="uploading || submitting">
-              Choisir une image
+              {{ $t('register.choose-image') }}
             </button>
-            <span class="filename" :class="{ empty: !filename }">{{ filename || 'Aucun fichier' }}</span>
+            <span class="filename" :class="{ empty: !filename }">{{ filename || $t('register.no-file') }}</span>
           </div>
           <div v-if="previewUrl" class="preview">
             <img :src="previewUrl" alt="Prévisualisation" />
           </div>
-          <p class="hint">Formats acceptés: jpeg, jpg, png, gif, webp</p>
+          <p class="hint">{{ $t('register.accepted-formats') }}: jpeg, jpg, png, gif, webp</p>
           <p v-if="avatarError" class="error">{{ avatarError }}</p>
         </div>
       </section>
 
       <div class="actions">
-        <NuxtLink class="link" to="/login">J'ai déjà un compte</NuxtLink>
+        <NuxtLink class="link" :to="{name: `login___${locale}`}">{{ $t('register.already-account') }}</NuxtLink>
         <button type="submit" class="save-btn" :disabled="submitting">
-          {{ submitting ? 'Création…' : 'Créer mon compte' }}
+          {{ submitting ? $t('register.creation') : $t('register.create-account') }}
         </button>
       </div>
 

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 const route = useRoute()
+const {locale} = useI18n()
+
 definePageMeta({ name: 'verify-sent' })
+
 useSeoMeta({
   title: 'VRC Remix - Vérifiez votre e‑mail',
   ogTitle: 'Vérifiez votre e‑mail',
@@ -9,6 +12,7 @@ useSeoMeta({
   ogDescription: 'Un lien de vérification vous a été envoyé par e‑mail.',
   twitterCard: 'app'
 })
+
 const email = computed(() => (route.query.email as string) || '')
 
 const emailOrUsername = ref('')
@@ -46,7 +50,7 @@ async function resend() {
           <span class="label-text">Email ou pseudo</span>
         </label>
         <div class="actions">
-          <NuxtLink class="link" to="/login">Retour connexion</NuxtLink>
+          <NuxtLink class="link" :to="{name: `login___${locale}`}">Retour connexion</NuxtLink>
           <button class="save-btn" :disabled="resending" @click="resend">{{ resending ? 'Renvoi…' : 'Renvoyer le lien' }}</button>
         </div>
       </div>

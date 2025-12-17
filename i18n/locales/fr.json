@@ -38,12 +38,16 @@
     "confirm-new-password": "Confirmer le mot de passe",
     "change": "Changer le mot de passe",
     "change-success": "Le mot de passe à été changé avec succès",
-    "change-error": "Une erreur est survenue lors du changement du mot de passe"
+    "change-error": "Une erreur est survenue lors du changement du mot de passe",
+    "placeholders": {
+      "pseudo": "Votre pseudo",
+      "email": "Votre email",
+      "current-password": "Actuel",
+      "new-password": "Nouveau",
+      "confirm-new-password": "Confirmer"
+    }
   },
   "projects": {
-    "edit": {
-      "title": "Modifier le projet"
-    },
     "index": {
       "title": "Projets",
       "switch": {
@@ -67,6 +71,55 @@
         "previous": "Précédent",
         "page": "Page"
       }
+    }
+  },
+  "project": {
+    "index": {
+      "file": "Fichier",
+      "left-click": "Clique gauche",
+      "right-click": "Clique droite",
+      "download": "Télécharger",
+      "add-to-favorites": "Ajouter aux favoris",
+      "del-to-favorites": "Retirer des favoris",
+      "update": "Modifier",
+      "not-found": "Introuvable"
+    },
+    "edit": {
+      "title": "Modifier le projet",
+      "not-found": "Introuvable",
+      "access-denied": "Accès refusé",
+      "switch": {
+        "private": "Privé",
+        "public": "Publique"
+      },
+      "form": {
+        "name": "Nom",
+        "description": "Description",
+        "tags": "Tags (séparés par des virgules)",
+        "add-images": "Ajouter des images",
+        "replace-zip": "Remplacer le fichier ZIP (optionnel)",
+        "choose-zip": "Choisir un fichier ZIP",
+        "no-file-selected": "Aucun fichier sélectionné",
+        "gallery": "Galerie d'images",
+        "gallery-message": "Ajoutez 1 à 4 images par envoi",
+        "send": "Envoi...",
+        "upload": "Uploader",
+        "nb-selected-images": "image(s) sélectionnée(s)",
+        "deletion": "Suppression",
+        "delete": "Supprimer",
+        "no-image": "Aucune image pour le moment",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      }
+    },
+    "create": {
+      "tab": {
+        "title": "Créer un projet"
+      },
+      "title": "Nouveau projet",
+      "must-be-connected": "Vous devez être connecté pour créer un projet.",
+      "zip-file": "Fichier ZIP",
+      "create": "Créer"
     }
   },
   "index": {
@@ -99,5 +152,42 @@
       "see-on-github": "Voir sur GitHub",
       "by": "par"
     }
+  },
+  "favorites": {
+    "title": "Mes favoris",
+    "cannot-load": "Impossible de charger vos favoris.",
+    "no-fav": "Vous n'avez encore aucun favori. Allez sur une page projet et cliquez sur « Ajouter aux favoris ».",
+    "empty-description": "Description vide"
+  },
+  "login": {
+    "tab": {
+      "title": "Se connecter"
+    },
+    "title": "Connexion",
+    "subtitle": "Accédez à vos projets",
+    "ident": "Email ou pseudo",
+    "password": "Mot de passe",
+    "forgot-password": "Mot de passe oublié ?",
+    "create-account": "Créer un compte",
+    "resend": "Renvoi...",
+    "resend-email": "Renvoyer l’e‑mail de vérification"
+  },
+  "register": {
+    "tab": {
+      "title": "Inscription"
+    },
+    "title": "Inscription",
+    "subtitle": "Créez votre compte pour commencer",
+    "email": "Email",
+    "pseudo": "Pseudo",
+    "password": "Mot de passe",
+    "confirm-password": "Confirmer le mot de passe",
+    "avatar": "Avatar (optionnel)",
+    "choose-image": "Choisir une image",
+    "no-file": "Aucun fichier",
+    "accepted-formats": "Formats acceptés",
+    "already-account": "J'ai déjà un compte",
+    "creation": "Création...",
+    "create-account": "Créer un compte"
   }
 }

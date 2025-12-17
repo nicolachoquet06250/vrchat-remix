@@ -132,16 +132,6 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
     favToggling.value[projectId] = false
   }
 }
-
-function convertDateFromLocal(date: Date|string) {
-  const convertedDate = ref(new Date(date).toLocaleDateString(locale.value));
-
-  watch(locale, () => {
-    convertedDate.value = new Date(date).toLocaleDateString(locale.value);
-  })
-
-  return convertedDate;
-}
 </script>
 
 <template>
@@ -158,7 +148,7 @@ function convertDateFromLocal(date: Date|string) {
             <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/>
           </svg>
         </button>
-        <NuxtLink v-if="user" to="/favorites" class="btn">
+        <NuxtLink v-if="user" :to="{name: `favorites___${locale}`}" class="btn">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
             <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
             <path d="M192 64C156.7 64 128 92.7 128 128L128 544C128 555.5 134.2 566.2 144.2 571.8C154.2 577.4 166.5 577.3 176.4 571.4L320 485.3L463.5 571.4C473.4 577.3 485.7 577.5 495.7 571.8C505.7 566.1 512 555.5 512 544L512 128C512 92.7 483.3 64 448 64L192 64z"/>
@@ -281,7 +271,7 @@ function convertDateFromLocal(date: Date|string) {
                   </span>
                 </NuxtLink>
               </span>
-              • {{ convertDateFromLocal(p.createdAt) }}
+              • {{ new Date(p.createdAt).toLocaleDateString(locale) }}
             </div>
 
             <p class="desc">{{ p.description ? ucFirst(p.description) : $t('projects.index.empty-description') }}</p>

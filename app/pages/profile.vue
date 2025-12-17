@@ -196,7 +196,7 @@ const lang = computed({
       <section class="info">
         <div class="info-row">
           <span class="muted">{{ $t('profil.inscription') }}</span>
-          <span>{{ new Date(user.createdAt).toLocaleString() }}</span>
+          <span>{{ new Date(user.createdAt).toLocaleString(locale) }}</span>
         </div>
       </section>
 
@@ -246,11 +246,11 @@ const lang = computed({
         <div class="grid">
           <label class="field">
             <span class="label">{{ $t('profil.pseudo') }}</span>
-            <input v-model="form.username" type="text" class="input" placeholder="Votre pseudo" />
+            <input v-model="form.username" type="text" class="input" :placeholder="$t('profil.placeholders.pseudo')" />
           </label>
           <label class="field">
             <span class="label">{{ $t('profil.email') }}</span>
-            <input v-model="form.email" type="email" class="input" placeholder="Votre e‑mail" />
+            <input v-model="form.email" type="email" class="input" :placeholder="$t('profil.placeholders.email')" />
           </label>
         </div>
         <div class="row">
@@ -267,17 +267,17 @@ const lang = computed({
         <div class="grid full">
           <label class="field">
             <span class="label">{{ $t('profil.current-password') }}</span>
-            <input v-model="pwd.current" type="password" class="input" placeholder="Actuel" />
+            <input v-model="pwd.current" type="password" class="input" :placeholder="$t('profil.placeholders.current-password')" />
           </label>
         </div>
         <div class="grid">
           <label class="field">
             <span class="label">{{ $t('profil.new-password') }}</span>
-            <input v-model="pwd.next" type="password" class="input" placeholder="Nouveau" />
+            <input v-model="pwd.next" type="password" class="input" :placeholder="$t('profil.placeholders.new-password')" />
           </label>
           <label class="field">
             <span class="label">{{ $t('profil.confirm-new-password') }}</span>
-            <input v-model="pwd.confirm" type="password" class="input" placeholder="Confirmer" />
+            <input v-model="pwd.confirm" type="password" class="input" :placeholder="$t('profil.placeholders.confirm-new-password')" />
           </label>
         </div>
         <div class="row">

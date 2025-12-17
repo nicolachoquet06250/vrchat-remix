@@ -38,12 +38,16 @@
     "confirm-new-password": "Confirm new password",
     "change": "Change password",
     "change-success": "Password changed successfully",
-    "change-error": "Error while changing password"
+    "change-error": "Error while changing password",
+    "placeholders": {
+      "pseudo": "Your pseudo",
+      "email": "Your email",
+      "current-password": "Actual",
+      "new-password": "New",
+      "confirm-new-password": "Confirm"
+    }
   },
   "projects": {
-    "edit": {
-      "title": "Update project"
-    },
     "index": {
       "title": "Projects",
       "switch": {
@@ -68,6 +72,54 @@
         "previous": "Previous",
         "page": "Page"
       }
+    }
+  },
+  "project": {
+    "index": {
+      "file": "File",
+      "left-click": "Left click",
+      "right-click": "Right click",
+      "download": "Download",
+      "add-to-favorites": "Add to favorites",
+      "del-to-favorites": "Remove from favorites",
+      "update": "Update",
+      "not-found": "Not found"
+    },
+    "edit": {
+      "title": "Update project",
+      "not-found": "Not found",
+      "access-denied": "Access denied",
+      "switch": {
+        "private": "Private",
+        "public": "Public"
+      },
+      "form": {
+        "name": "Name",
+        "description": "Description",
+        "tags": "Tags (separated by commas)",
+        "add-images": "Add images",
+        "replace-zip": "Replace ZIP file (optional)",
+        "choose-zip": "Choose ZIP file",
+        "no-file-selected": "No file selected",
+        "gallery": "Image gallery",
+        "gallery-message": "Add Maximum 4 images per upload.",
+        "upload": "Upload",
+        "nb-selected-images": "selected image(s)",
+        "deletion": "Deletion",
+        "delete": "Delete",
+        "no-images": "No images yet.",
+        "save": "Save",
+        "cancel": "Cancel"
+      }
+    },
+    "create": {
+      "tab": {
+        "title": "Create a project"
+      },
+      "title": "New project",
+      "must-be-connected": "You must be connected to create a project.",
+      "zip-file": "ZIP file",
+      "create": "Create"
     }
   },
   "index": {
@@ -100,5 +152,42 @@
       "see-on-github": "See on GitHub",
       "by": "by"
     }
+  },
+  "favorites": {
+    "title": "My favorites",
+    "cannot-load": "Impossible to load favorites.",
+    "no-fav": "You have no favorite projects yet. Go on the project page and click on « Add to favorites ».",
+    "empty-description": "Empty description"
+  },
+  "login": {
+    "tab": {
+      "title": "Login"
+    },
+    "title": "Login",
+    "subtitle": "Access your projects",
+    "ident": "Email or pseudo",
+    "password": "Password",
+    "forgot-password": "forgot your password ?",
+    "create-account": "Create an account",
+    "resend": "Resend....",
+    "resend-email": "Resend verification email"
+  },
+  "register": {
+    "tab": {
+      "title": "Sign up"
+    },
+    "title": "Sign up",
+    "subtitle": "Create your account",
+    "email": "Email",
+    "pseudo": "Pseudo",
+    "password": "Password",
+    "confirm-password": "Confirm password",
+    "avatar": "Avatar (optional)",
+    "choose-image": "Choose an image",
+    "no-file": "No file",
+    "accepted-formats": "Accepted formats",
+    "already-account": "Already have an account",
+    "creation": "Creation...",
+    "create-account": "Create an account"
   }
 }

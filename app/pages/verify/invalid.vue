@@ -1,5 +1,8 @@
 <script setup lang="ts">
+const {locale} = useI18n()
+
 definePageMeta({ name: 'verify-invalid' })
+
 useSeoMeta({
   title: 'VRC Remix - Lien invalide ou expiré',
   ogTitle: 'Lien invalide ou expiré',
@@ -8,6 +11,7 @@ useSeoMeta({
   ogDescription: 'Le lien de vérification est invalide ou a expiré.',
   twitterCard: 'app'
 })
+
 const emailOrUsername = ref('')
 const resending = ref(false)
 async function onResend() {
@@ -40,7 +44,7 @@ async function onResend() {
           <span class="label-text">Email ou pseudo</span>
         </label>
         <div class="actions">
-          <NuxtLink class="link" to="/login">Retour connexion</NuxtLink>
+          <NuxtLink class="link" :to="{name: `login___${locale}`}">Retour connexion</NuxtLink>
           <button class="save-btn" :disabled="resending" @click="onResend">{{ resending ? 'Renvoi…' : 'Renvoyer le lien' }}</button>
         </div>
       </div>

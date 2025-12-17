@@ -51,14 +51,14 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 <template>
   <div class="container">
     <div class="header">
-      <h1>Mes favoris</h1>
+      <h1>{{ $t('favorites.title') }}</h1>
     </div>
 
-    <div v-if="pending">Chargement…</div>
-    <div v-else-if="error">Impossible de charger vos favoris.</div>
+    <div v-if="pending">{{ $t('loading') }}</div>
+    <div v-else-if="error">{{ $t('favorites.cannot-load') }}</div>
     <template v-else>
       <p v-if="!data?.items?.length">
-        Vous n'avez encore aucun favori. Allez sur une page projet et cliquez sur « Ajouter aux favoris ».
+        {{ $t('favorites.no-fav') }}
       </p>
       <ul v-else class="grid">
         <li v-for="p in data!.items" :key="p.id" class="card">
@@ -80,10 +80,10 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
                 </template>
                 <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
               </span>
-              • {{ new Date(p.createdAt).toLocaleDateString() }}
+              • {{ new Date(p.createdAt).toLocaleDateString(locale) }}
             </div>
 
-            <p class="desc">{{ p.description ? ucFirst(p.description) : 'Description vide' }}</p>
+            <p class="desc">{{ p.description ? ucFirst(p.description) : $t('favorites.empty-description') }}</p>
 
             <div class="tags">
               <span class="tag" v-for="t in p.tags" :key="t">#{{ t }}</span>

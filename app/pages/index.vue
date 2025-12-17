@@ -102,7 +102,7 @@ const scrollToUpdates = () => {
           <div class="updates-meta">
             <span class="badge">{{ $t('index.last-update.merge') }}</span>
             <time :datetime="latestUpdate.data.mergedAt">
-              {{ new Date(latestUpdate.data.mergedAt).toLocaleString() }}
+              {{ new Date(latestUpdate.data.mergedAt).toLocaleString(locale) }}
             </time>
           </div>
           <h3 class="update-title">{{ latestUpdate.data.title }}</h3>
