@@ -32,6 +32,12 @@
     "pseudo": "Pseudo",
     "email": "Email",
     "save": "Enregistrer",
+    "disable": {
+      "button": "Désactiver ce profil",
+      "confirm": "Êtes-vous sûr de vouloir désactiver ce profil ?",
+      "success": "Le profil a été désactivé.",
+      "error": "Impossible de désactiver le profil pour le moment."
+    },
     "change-password": "Changer le mot de passe",
     "current-password": "Mot de passe actuel",
     "new-password": "Nouveau mot de passe",
