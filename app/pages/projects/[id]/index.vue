@@ -1,11 +1,13 @@
 <script setup lang="ts">
-definePageMeta({
-  name: 'project'
-})
 const route = useRoute()
 const id = Number(route.params.id)
 const { user } = useSession()
-const { ucFirst } = useHelpers()
+const { ucFirst, convertDateFromLocal } = useHelpers()
+const {locale} = useI18n()
+
+definePageMeta({
+  name: 'project'
+})
 
 const { data, pending, error, refresh } = await useFetch(`/api/projects/${id}`)
 
@@ -13,15 +15,16 @@ const { data, pending, error, refresh } = await useFetch(`/api/projects/${id}`)
 const { data: images } = await useFetch(`/api/projects/${id}/images`)
 
 useSeoMeta({
-  ogTitle: computed(() => data.value!.name),
-  ogImage: computed(() => {
+  title: () => `VRC Remix - ${data.value?.name}`,
+  ogTitle: () => data.value!.name,
+  ogImage: () => {
     if (images.value && images.value.length > 0) {
       return `/api/projects/images/og-image?id=${[...images.value].shift()!.id}&d=${new Date().getTime()}`
     }
     return '/vrchat-remix.png'
-  }),
-  description: computed(() => data.value!.description),
-  ogDescription: computed(() => data.value!.description),
+  },
+  description: () => data.value!.description,
+  ogDescription: () => data.value!.description,
   twitterCard: 'app'
 })
 
@@ -248,18 +251,20 @@ onBeforeUnmount(() => {
   </Head>
 
   <div class="container">
-    <div v-if="pending">Chargement…</div>
-    <div v-else-if="error">Introuvable</div>
+    <div v-if="pending">{{ $t('loading') }}</div>
+    <div v-else-if="error">{{ $t('project.index.not-found') }}</div>
     <div v-else class="card">
       <div class="header">
         <h1 class="title">{{ ucFirst(data!.name) }}</h1>
         <div class="spacer" />
-        <NuxtLink v-if="isOwner" :to="{name: 'edit-project', params: {id}}" class="btn">Modifier</NuxtLink>
+        <NuxtLink v-if="isOwner" :to="{name: `edit-project___${locale}`, params: {id}}" class="btn">
+          {{ $t('project.index.update') }}
+        </NuxtLink>
       </div>
 
       <div class="meta">
         <span class="creator">
-          <NuxtLink :to="{name: 'creator', params: {id: data!.userId}}" style="text-decoration: underline; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
+          <NuxtLink :to="{name: `creator___${locale}`, params: {id: data!.userId}}" style="text-decoration: underline; color: light-dark(#000, #666); display: inline-flex; flex-direction: row; justify-content: center; align-items: center; gap: 5px">
             <template v-if="data!.creatorHasAvatar && data!.creatorAvatarUrl">
               <img
                 class="avatar"
@@ -274,7 +279,7 @@ onBeforeUnmount(() => {
             <span class="username">{{ data!.creatorUsername || ('#'+data!.userId) }}</span>
           </NuxtLink>
         </span>
-        • {{ new Date(data!.createdAt).toLocaleString() }}
+        • {{ new Date(data!.createdAt).toLocaleString(locale) }}
       </div>
 
       <p class="desc">{{ ucFirst(data!.description ?? '') }}</p>
@@ -284,10 +289,10 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="file" v-if="data!.hasFile">
-        <div>Fichier: {{ data!.fileName }} <span v-if="data!.fileSize">({{ Math.round(data!.fileSize!/1024) }} Ko)</span></div>
+        <div>{{ $t('project.index.file') }}: {{ data!.fileName }} <span v-if="data!.fileSize">({{ Math.round(data!.fileSize!/1024) }} Ko)</span></div>
       </div>
       <div class="actions">
-        <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">Télécharger</a>
+        <a v-if="data!.hasFile" :href="`/api/projects/${id}/download`" class="btn primary">{{ $t('project.index.download') }}</a>
         <button
           v-if="user && data"
           class="btn"
@@ -300,13 +305,13 @@ onBeforeUnmount(() => {
             <svg v-if="isFavorite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
               <path d="M192 64C156.7 64 128 92.7 128 128L128 544C128 555.5 134.2 566.2 144.2 571.8C154.2 577.4 166.5 577.3 176.4 571.4L320 485.3L463.5 571.4C473.4 577.3 485.7 577.5 495.7 571.8C505.7 566.1 512 555.5 512 544L512 128C512 92.7 483.3 64 448 64L192 64z"/>
             </svg>
-            Retirer des favoris
+            {{ $t('project.index.del-to-favorites') }}
           </template>
           <template v-else>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
               <path d="M128 128C128 92.7 156.7 64 192 64L448 64C483.3 64 512 92.7 512 128L512 545.1C512 570.7 483.5 585.9 462.2 571.7L320 476.8L177.8 571.7C156.5 585.9 128 570.6 128 545.1L128 128zM192 112C183.2 112 176 119.2 176 128L176 515.2L293.4 437C309.5 426.3 330.5 426.3 346.6 437L464 515.2L464 128C464 119.2 456.8 112 448 112L192 112z"/>
             </svg>
-            Ajouter aux favoris
+            {{ $t('project.index.add-to-favorites') }}
           </template>
         </button>
         <span v-if="favMsg" class="hint error">{{ favMsg }}</span>
@@ -315,13 +320,13 @@ onBeforeUnmount(() => {
       <template v-if="hasImages">
         <div style="display: flex; flex-direction: column; justify-content: flex-start; margin-left: 45px">
           <span style="display: inline-flex; justify-content: flex-start; align-items: center; gap: 10px">
-            Click gauche :
+            {{ $t('project.index.left-click') }} :
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
               <path style="fill: light-dark(#000, #fff)" d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 176C258.7 176 248 186.7 248 200L248 248L200 248C186.7 248 176 258.7 176 272C176 285.3 186.7 296 200 296L248 296L248 344C248 357.3 258.7 368 272 368C285.3 368 296 357.3 296 344L296 296L344 296C357.3 296 368 285.3 368 272C368 258.7 357.3 248 344 248L296 248L296 200C296 186.7 285.3 176 272 176z"/>
             </svg>
           </span>
           <span style="display: inline-flex; justify-content: flex-start; align-items: center; gap: 10px">
-            Click droit :
+            {{ $t('project.index.right-click') }} :
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
               <path style="fill: light-dark(#000, #fff)" d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM200 248C186.7 248 176 258.7 176 272C176 285.3 186.7 296 200 296L344 296C357.3 296 368 285.3 368 272C368 258.7 357.3 248 344 248L200 248z"/>
             </svg>

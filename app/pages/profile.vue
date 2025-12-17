@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import trackRoute, {type RouteMeta} from '~~/app/middlewares/track-route.global'
+import FR from "@/assets/fr.png";
+import US from "@/assets/us.png";
+
+const {locale, setLocale} = useI18n()
 
 const { user, logout, refresh, updateProfile, changePassword, error: sessionError } = useSession()
 const { uploading, error, uploadAvatar } = useAvatar()
@@ -16,10 +20,11 @@ definePageMeta({
 })
 
 useSeoMeta({
-  ogTitle: computed(() => `Profile - ${user.value?.username}`),
+  title: () => `VRC Remix - ${user.value?.username}`,
+  ogTitle: () => `Profile - ${user.value?.username}`,
   ogImage: '/vrchat-remix.png',
-  description: computed(() => `la page de profile de ${user.value?.username}`),
-  ogDescription: computed(() => `la page de profile de ${user.value?.username}`),
+  description: () => `la page de profile de ${user.value?.username}`,
+  ogDescription: () => `la page de profile de ${user.value?.username}`,
   twitterCard: 'app'
 })
 
@@ -135,6 +140,17 @@ async function onUpload() {
 function openFilePicker() {
   avatarInput.value?.click()
 }
+
+function changeLocale(newLocale: 'fr'|'en') {
+  // Ignore if already set
+  if (locale.value === newLocale) return
+  setLocale(newLocale)
+}
+
+const lang = computed({
+  get: () => locale.value === 'en',
+  set: (l: boolean) => changeLocale(l ? 'en' : 'fr')
+})
 </script>
 
 <template>
@@ -144,29 +160,43 @@ function openFilePicker() {
 
   <div class="container">
     <div class="header">
-      <h1>Mon profil</h1>
-      <p class="hint">Gérez votre avatar et vos informations personnelles</p>
+      <h1>{{ $t('profil.title') }}</h1>
+      <p class="hint">{{ $t('profil.subtitle') }}</p>
     </div>
 
     <div v-if="user" class="form">
       <div class="actions">
         <NuxtLink class="link" :to="{
-          name: meta.previousRoute?.name ?? 'root',
+          name: meta.previousRoute?.name ?? `root___${locale}`,
           params: meta.previousRoute?.params ?? {},
           query: meta.previousRoute?.query ?? {}
         }">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
             <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
             <path d="M201.4 297.4C188.9 309.9 188.9 330.2 201.4 342.7L361.4 502.7C373.9 515.2 394.2 515.2 406.7 502.7C419.2 490.2 419.2 469.9 406.7 457.4L269.3 320L406.6 182.6C419.1 170.1 419.1 149.8 406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3L201.3 297.3z"/>
-          </svg> Retour
+          </svg> {{ $t('profil.header.back') }}
         </NuxtLink>
-        <button class="danger" @click="onLogout">Se déconnecter</button>
+        <button class="danger" @click="onLogout">{{ $t('profil.header.disconnect') }}</button>
+      </div>
+
+      <div style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 15px">
+        <span>
+          {{ $t('profil.choose-language') }}
+        </span>
+
+        <UiSwitch
+            v-model="lang"
+            :label="{
+            before: `<img src='${FR}' style='width: 30px; height: 30px;'>`,
+            after: `<img src='${US}' style='width: 30px; height: 30px;'>`
+        }"
+        />
       </div>
 
       <section class="info">
         <div class="info-row">
-          <span class="muted">Inscription</span>
-          <span>{{ new Date(user.createdAt).toLocaleString() }}</span>
+          <span class="muted">{{ $t('profil.inscription') }}</span>
+          <span>{{ new Date(user.createdAt).toLocaleString(locale) }}</span>
         </div>
       </section>
 
@@ -179,11 +209,13 @@ function openFilePicker() {
               alt="Avatar"
               class="avatar"
             />
-            <div v-else class="avatar placeholder">{{ user.username?.[0]?.toUpperCase() || 'A' }}</div>
+            <div v-else class="avatar placeholder">
+              {{ user.username?.[0]?.toUpperCase() || 'A' }}
+            </div>
           </div>
 
           <div class="file-field">
-            <span class="file-label">Avatar</span>
+            <span class="file-label">{{ $t('profil.avatar') }}</span>
             <div class="file-row">
               <input
                 ref="avatarInput"
@@ -193,37 +225,37 @@ function openFilePicker() {
                 @change="onPick"
               />
               <button type="button" class="file-btn" @click="openFilePicker" :disabled="uploading">
-                Choisir une image
+                {{ $t('profil.choose-image') }}
               </button>
               <span class="filename" :class="{ empty: !filename }">{{ filename || 'Aucun fichier' }}</span>
               <button class="btn" :disabled="!file || uploading" @click="onUpload">
-                {{ uploading ? 'Envoi…' : 'Uploader' }}
+                {{ uploading ? 'Envoi…' : $t('profil.upload') }}
               </button>
             </div>
-            <p class="hint">Formats acceptés: jpeg, jpg, png, gif, webp</p>
+            <p class="hint">{{ $t('profil.formats') }}: jpeg, jpg, png, gif, webp</p>
             <p v-if="error" class="error">{{ error }}</p>
           </div>
         </div>
       </section>
 
       <section class="profile-edit">
-        <h2>Informations du profil</h2>
-        <div class="btn" style="border-color: darkorange; background-color: transparent; cursor: default;">
-          ⚠️ Si vous mettez à jour votre email, vous devrez re passer par une phase de validation de celui-ci ⚠️
+        <h2>{{ $t('profil.profil-informations') }}</h2>
+        <div class="btn" style="text-align: center; border-color: darkorange; background-color: transparent; cursor: default;">
+          ⚠️ {{ $t('profil.alert') }} ⚠️
         </div>
         <div class="grid">
           <label class="field">
-            <span class="label">Pseudo</span>
-            <input v-model="form.username" type="text" class="input" placeholder="Votre pseudo" />
+            <span class="label">{{ $t('profil.pseudo') }}</span>
+            <input v-model="form.username" type="text" class="input" :placeholder="$t('profil.placeholders.pseudo')" />
           </label>
           <label class="field">
-            <span class="label">Email</span>
-            <input v-model="form.email" type="email" class="input" placeholder="Votre e‑mail" />
+            <span class="label">{{ $t('profil.email') }}</span>
+            <input v-model="form.email" type="email" class="input" :placeholder="$t('profil.placeholders.email')" />
           </label>
         </div>
         <div class="row">
           <button class="btn" :disabled="profileSaving" @click="onSaveProfile">
-            {{ profileSaving ? 'Enregistrement…' : 'Enregistrer' }}
+            {{ profileSaving ? 'Enregistrement…' : $t('profil.save') }}
           </button>
           <span class="status ok" v-if="profileMessage">{{ profileMessage }}</span>
           <span class="status err" v-if="profileError">{{ profileError }}</span>
@@ -231,26 +263,26 @@ function openFilePicker() {
       </section>
 
       <section class="password-edit">
-        <h2>Changer le mot de passe</h2>
+        <h2>{{ $t('profil.change-password') }}</h2>
         <div class="grid full">
           <label class="field">
-            <span class="label">Mot de passe actuel</span>
-            <input v-model="pwd.current" type="password" class="input" placeholder="Actuel" />
+            <span class="label">{{ $t('profil.current-password') }}</span>
+            <input v-model="pwd.current" type="password" class="input" :placeholder="$t('profil.placeholders.current-password')" />
           </label>
         </div>
         <div class="grid">
           <label class="field">
-            <span class="label">Nouveau mot de passe</span>
-            <input v-model="pwd.next" type="password" class="input" placeholder="Nouveau" />
+            <span class="label">{{ $t('profil.new-password') }}</span>
+            <input v-model="pwd.next" type="password" class="input" :placeholder="$t('profil.placeholders.new-password')" />
           </label>
           <label class="field">
-            <span class="label">Confirmer le nouveau</span>
-            <input v-model="pwd.confirm" type="password" class="input" placeholder="Confirmer" />
+            <span class="label">{{ $t('profil.confirm-new-password') }}</span>
+            <input v-model="pwd.confirm" type="password" class="input" :placeholder="$t('profil.placeholders.confirm-new-password')" />
           </label>
         </div>
         <div class="row">
           <button class="btn" :disabled="pwdSaving" @click="onChangePassword">
-            {{ pwdSaving ? 'Changement…' : 'Changer le mot de passe' }}
+            {{ pwdSaving ? 'Changement…' : $t('profil.change-password') }}
           </button>
           <span class="status ok" v-if="pwdMessage">{{ pwdMessage }}</span>
           <span class="status err" v-if="pwdError">{{ pwdError }}</span>
@@ -259,16 +291,16 @@ function openFilePicker() {
 
       <div class="actions" style="margin-bottom: 20px;">
         <NuxtLink class="link" :to="{
-          name: meta.previousRoute?.name ?? 'root',
+          name: meta.previousRoute?.name ?? `root___${locale}`,
           params: meta.previousRoute?.params ?? {},
           query: meta.previousRoute?.query ?? {}
         }">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
             <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
             <path d="M201.4 297.4C188.9 309.9 188.9 330.2 201.4 342.7L361.4 502.7C373.9 515.2 394.2 515.2 406.7 502.7C419.2 490.2 419.2 469.9 406.7 457.4L269.3 320L406.6 182.6C419.1 170.1 419.1 149.8 406.6 137.3C394.1 124.8 373.8 124.8 361.3 137.3L201.3 297.3z"/>
-          </svg> Retour
+          </svg> {{ $t('profil.header.back') }}
         </NuxtLink>
-        <button class="danger" @click="onLogout">Se déconnecter</button>
+        <button class="danger" @click="onLogout">{{ $t('profil.header.disconnect') }}</button>
       </div>
     </div>
 

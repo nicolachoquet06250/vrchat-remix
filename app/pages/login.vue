@@ -2,6 +2,7 @@
 const { login, error, user } = useSession()
 const router = useRouter()
 const route = useRoute()
+const {locale} = useI18n()
 
 const emailOrUsername = ref('')
 const password = ref('')
@@ -54,13 +55,13 @@ async function onResend() {
 
 <template>
   <Head>
-    <Title>Se connecter</Title>
+    <Title>{{ $t('login.tab.title') }}</Title>
   </Head>
 
   <div class="container">
     <div class="header">
-      <h1>Connexion</h1>
-      <p class="hint">Accédez à vos projets</p>
+      <h1>{{ $t('login.title') }}</h1>
+      <p class="hint">{{ $t('login.subtitle') }}</p>
     </div>
 
     <form @submit.prevent="onSubmit" class="form" novalidate>
@@ -73,7 +74,7 @@ async function onResend() {
           minlength="3"
           autocomplete="username"
         />
-        <span class="label-text">Email ou pseudo</span>
+        <span class="label-text">{{ $t('login.ident') }}</span>
       </label>
 
       <label class="float">
@@ -85,17 +86,17 @@ async function onResend() {
           minlength="8"
           autocomplete="current-password"
         />
-        <span class="label-text">Mot de passe</span>
+        <span class="label-text">{{ $t('login.password') }}</span>
       </label>
 
       <div>
-        <NuxtLink class="link" to="/forgot-password">Mot de passe oublié ?</NuxtLink>
+        <NuxtLink class="link" :to="{name: `forgot-password___${locale}`}">{{ $t('login.forgot-password') }}</NuxtLink>
       </div>
 
       <div class="actions">
-        <NuxtLink class="link" to="/register">Créer un compte</NuxtLink>
+        <NuxtLink class="link" :to="{name: `register___${locale}`}">{{ $t('login.create-account') }}</NuxtLink>
         <button type="submit" class="save-btn" :disabled="submitting">
-          {{ submitting ? 'Connexion…' : 'Se connecter' }}
+          {{ submitting ? `${$t('login.title')}…` : $t('login.tab.title') }}
         </button>
       </div>
 
@@ -108,7 +109,7 @@ async function onResend() {
           style="margin-top:8px"
           :disabled="resending"
           @click="onResend"
-        >{{ resending ? 'Renvoi…' : 'Renvoyer l’e‑mail de vérification' }}</button>
+        >{{ resending ? $t('login.resend') : $t('login.resend-email') }}</button>
       </div>
     </form>
   </div>

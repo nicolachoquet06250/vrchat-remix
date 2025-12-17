@@ -1,0 +1,193 @@
+{
+  "loading": "Chargement...",
+  "nav": {
+    "projects": "Projets",
+    "login": "Connexion",
+    "register": "Inscription",
+    "profile": "Profil",
+    "language": "Langue",
+    "french": "Français",
+    "english": "Anglais"
+  },
+  "alt": {
+    "logo": "logo vrchat remix",
+    "avatar": "Avatar"
+  },
+  "profil": {
+    "choose-language": "Choisissez votre langue",
+    "header": {
+      "back": "Retour",
+      "disconnect": "Se déconnecter"
+    },
+    "title": "Mon profil",
+    "subtitle": "Gérez votre avatar et vos informations personnelles",
+    "inscription": "Inscription",
+    "avatar": "Avatar",
+    "choose-image": "Choisir une image",
+    "formats": "Formats accéptés: ",
+    "no-file": "Aucun fichier",
+    "upload": "Uploader",
+    "profil-informations": "Informations de profil",
+    "alert": "Si vous mettez à jour votre email, vous devrez re passer par une phase de validation de celui-ci",
+    "pseudo": "Pseudo",
+    "email": "Email",
+    "save": "Enregistrer",
+    "change-password": "Changer le mot de passe",
+    "current-password": "Mot de passe actuel",
+    "new-password": "Nouveau mot de passe",
+    "confirm-new-password": "Confirmer le mot de passe",
+    "change": "Changer le mot de passe",
+    "change-success": "Le mot de passe à été changé avec succès",
+    "change-error": "Une erreur est survenue lors du changement du mot de passe",
+    "placeholders": {
+      "pseudo": "Votre pseudo",
+      "email": "Votre email",
+      "current-password": "Actuel",
+      "new-password": "Nouveau",
+      "confirm-new-password": "Confirmer"
+    }
+  },
+  "projects": {
+    "index": {
+      "title": "Projets",
+      "switch": {
+        "all-projects": "Tous les projets",
+        "my-projects": "Mes projets",
+        "tag": "Tag",
+        "name": "Nom"
+      },
+      "modal": {
+        "title": "Mes recherches enregistrées",
+        "type": "Type",
+        "search": "Recherche",
+        "actions": "Actions",
+        "delete": "Supprimer cette alerte",
+        "no-saved-searches": "Aucune recherche enregistrée pour le moment."
+      },
+      "no-projects": "Aucun projet trouvé.",
+      "empty-description": "Description vide",
+      "pagination": {
+        "next": "Suivant",
+        "previous": "Précédent",
+        "page": "Page"
+      }
+    }
+  },
+  "project": {
+    "index": {
+      "file": "Fichier",
+      "left-click": "Clique gauche",
+      "right-click": "Clique droite",
+      "download": "Télécharger",
+      "add-to-favorites": "Ajouter aux favoris",
+      "del-to-favorites": "Retirer des favoris",
+      "update": "Modifier",
+      "not-found": "Introuvable"
+    },
+    "edit": {
+      "title": "Modifier le projet",
+      "not-found": "Introuvable",
+      "access-denied": "Accès refusé",
+      "switch": {
+        "private": "Privé",
+        "public": "Publique"
+      },
+      "form": {
+        "name": "Nom",
+        "description": "Description",
+        "tags": "Tags (séparés par des virgules)",
+        "add-images": "Ajouter des images",
+        "replace-zip": "Remplacer le fichier ZIP (optionnel)",
+        "choose-zip": "Choisir un fichier ZIP",
+        "no-file-selected": "Aucun fichier sélectionné",
+        "gallery": "Galerie d'images",
+        "gallery-message": "Ajoutez 1 à 4 images par envoi",
+        "send": "Envoi...",
+        "upload": "Uploader",
+        "nb-selected-images": "image(s) sélectionnée(s)",
+        "deletion": "Suppression",
+        "delete": "Supprimer",
+        "no-image": "Aucune image pour le moment",
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      }
+    },
+    "create": {
+      "tab": {
+        "title": "Créer un projet"
+      },
+      "title": "Nouveau projet",
+      "must-be-connected": "Vous devez être connecté pour créer un projet.",
+      "zip-file": "Fichier ZIP",
+      "create": "Créer"
+    }
+  },
+  "index": {
+    "tagline": {
+      "1": "Le hub pour découvrir, remixer et partager des projets VRChat.",
+      "2": "Recherchez par nom ou par tag, enregistrez des alertes et suivez facilement les nouveautés."
+    },
+    "button-projects": "Découvrir les projets",
+    "sections": {
+      "1": {
+        "title": "Recherche multi-type",
+        "description": "Par nom ou par tag pour trouver rapidement le bon projet."
+      },
+      "2": {
+        "title": "Alertes personnalisées",
+        "description": "Enregistrez vos recherches et recevez une notification dès qu’il y a du nouveau."
+      },
+      "3": {
+        "title": "Partage simplifié",
+        "description": "Publiez vos projets et collaborez avec la communauté."
+      }
+    },
+    "button-updates": "Voir les mises à jour",
+    "last-update": {
+      "title": "Dernières updates",
+      "no-data": "Aucun merge récent.",
+      "error-1": "Impossible de récupérer les updates. Réessayez plus tard.",
+      "error-2": "Section non configurée. Définissez les variables NUXT_PUBLIC_GITHUB_OWNER et NUXT_PUBLIC_GITHUB_REPO.",
+      "merge": "Merge",
+      "see-on-github": "Voir sur GitHub",
+      "by": "par"
+    }
+  },
+  "favorites": {
+    "title": "Mes favoris",
+    "cannot-load": "Impossible de charger vos favoris.",
+    "no-fav": "Vous n'avez encore aucun favori. Allez sur une page projet et cliquez sur « Ajouter aux favoris ».",
+    "empty-description": "Description vide"
+  },
+  "login": {
+    "tab": {
+      "title": "Se connecter"
+    },
+    "title": "Connexion",
+    "subtitle": "Accédez à vos projets",
+    "ident": "Email ou pseudo",
+    "password": "Mot de passe",
+    "forgot-password": "Mot de passe oublié ?",
+    "create-account": "Créer un compte",
+    "resend": "Renvoi...",
+    "resend-email": "Renvoyer l’e‑mail de vérification"
+  },
+  "register": {
+    "tab": {
+      "title": "Inscription"
+    },
+    "title": "Inscription",
+    "subtitle": "Créez votre compte pour commencer",
+    "email": "Email",
+    "pseudo": "Pseudo",
+    "password": "Mot de passe",
+    "confirm-password": "Confirmer le mot de passe",
+    "avatar": "Avatar (optionnel)",
+    "choose-image": "Choisir une image",
+    "no-file": "Aucun fichier",
+    "accepted-formats": "Formats acceptés",
+    "already-account": "J'ai déjà un compte",
+    "creation": "Création...",
+    "create-account": "Créer un compte"
+  }
+}

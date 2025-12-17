@@ -1,10 +1,25 @@
 <script setup lang="ts">
+import FR from '~~/app/assets/fr.png'
+import US from '~~/app/assets/us.png'
+
 const {user, loading} = useSession()
 const router = useRouter()
 const route = useRoute()
+const {locale, setLocale} = useI18n()
 
 const isDev = import.meta.env.VITE_NODE_ENV === 'development'
 const devVignetteLabel = import.meta.env.VITE_NODE_ENV
+
+function changeLocale(newLocale: 'fr'|'en') {
+  // Ignore if already set
+  if (locale.value === newLocale) return
+  setLocale(newLocale)
+}
+
+const lang = computed({
+  get: () => locale.value === 'en',
+  set: (l: boolean) => changeLocale(l ? 'en' : 'fr')
+})
 </script>
 
 <template>
@@ -12,30 +27,30 @@ const devVignetteLabel = import.meta.env.VITE_NODE_ENV
 
   <div>
     <header class="header">
-      <NuxtLink :to="{name: 'root'}">
-        <img src="/vrchat-remix.png" alt="logo vrchat remix" class="logo">
+      <NuxtLink :to="{name: `root___${locale}`}">
+        <img src="/vrchat-remix.png" :alt="$t('alt.logo')" class="logo">
       </NuxtLink>
       <a
-          v-if="router.resolve({name: 'root'}).href !== route.path"
-          :href="router.resolve({name: 'home'}).href"
-          @click.prevent.stop="navigateTo({name: 'home'})"
+          v-if="router.resolve({name: `root___${locale}`}).href !== route.path"
+          :href="router.resolve({name: `projects___${locale}`}).href"
+          @click.prevent.stop="navigateTo({name: `projects___${locale}`})"
           :class="['menu-item', {
-            'router-link-active': router.resolve({name: 'home'}).href === route.path
+            'router-link-active': router.resolve({name: `projects___${locale}`}).href === route.path
           }]"
       >
-        Projets
+        {{ $t('nav.projects') }}
       </a>
 
-      <div v-if="!loading">
-        <NuxtLink v-if="user" :to="{name: 'profile'}" class="profile-link">
+      <div v-if="!loading" style="display:flex; flex-direction: row; justify-content: center; align-items: center; gap: 12px;">
+        <NuxtLink v-if="user" :to="{name: `profile___${locale}`}" class="profile-link">
           <img v-if="user.avatarUrl" :src="user.avatarUrl" alt="Avatar" class="avatar" />
           <div v-else class="avatar placeholder">{{ user.username.slice(0, 1).toUpperCase() }}</div>
 
           <span>{{ user.username }}</span>
         </NuxtLink>
         <template v-else>
-          <NuxtLink :to="{name: 'login'}" class="btn">Connexion</NuxtLink>
-          <NuxtLink :to="{name: 'register'}" class="btn">Inscription</NuxtLink>
+          <NuxtLink :to="{name: `login___${locale}`}" class="btn">{{ $t('nav.login') }}</NuxtLink>
+          <NuxtLink :to="{name: `register___${locale}`}" class="btn">{{ $t('nav.register') }}</NuxtLink>
         </template>
       </div>
     </header>

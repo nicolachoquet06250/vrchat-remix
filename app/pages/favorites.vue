@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { user } = useSession()
+const {locale} = useI18n()
 
 onMounted(() => {
   setTimeout(() => {
@@ -15,7 +16,7 @@ definePageMeta({
 
 useSeoMeta({
   title: 'VRC Remix - Mes favoris',
-  ogTitle: 'Mes favoris',
+  ogTitle: 'VRC Remix - Mes favoris',
   description: 'Retrouvez ici tous les projets que vous avez ajoutés à vos favoris.',
   ogDescription: 'Vos projets favoris sur VRC Remix.',
   twitterCard: 'app'
@@ -50,18 +51,18 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
 <template>
   <div class="container">
     <div class="header">
-      <h1>Mes favoris</h1>
+      <h1>{{ $t('favorites.title') }}</h1>
     </div>
 
-    <div v-if="pending">Chargement…</div>
-    <div v-else-if="error">Impossible de charger vos favoris.</div>
+    <div v-if="pending">{{ $t('loading') }}</div>
+    <div v-else-if="error">{{ $t('favorites.cannot-load') }}</div>
     <template v-else>
       <p v-if="!data?.items?.length">
-        Vous n'avez encore aucun favori. Allez sur une page projet et cliquez sur « Ajouter aux favoris ».
+        {{ $t('favorites.no-fav') }}
       </p>
       <ul v-else class="grid">
         <li v-for="p in data!.items" :key="p.id" class="card">
-          <NuxtLink :to="{ name: 'project', params: { id: p.id } }">
+          <NuxtLink :to="{ name: `project___${locale}`, params: { id: p.id } }">
             <div v-if="p.coverImageId" class="cover">
               <img :src="`/api/projects/images/${p.coverImageId}`" :alt="`${p.name} cover`" />
             </div>
@@ -79,10 +80,10 @@ async function toggleFavoriteOnList(projectId: number, isFav: boolean | undefine
                 </template>
                 <span class="username">{{ p.creatorUsername || ('#'+p.userId) }}</span>
               </span>
-              • {{ new Date(p.createdAt).toLocaleDateString() }}
+              • {{ new Date(p.createdAt).toLocaleDateString(locale) }}
             </div>
 
-            <p class="desc">{{ p.description ? ucFirst(p.description) : 'Description vide' }}</p>
+            <p class="desc">{{ p.description ? ucFirst(p.description) : $t('favorites.empty-description') }}</p>
 
             <div class="tags">
               <span class="tag" v-for="t in p.tags" :key="t">#{{ t }}</span>

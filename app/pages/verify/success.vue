@@ -1,7 +1,11 @@
 <script setup lang="ts">
+const {locale} = useI18n()
+
 definePageMeta({ name: 'verify-success' })
+
 useSeoMeta({
-  ogTitle: 'VRC Remix - E‑mail vérifié',
+  title: 'VRC Remix - E‑mail vérifié',
+  ogTitle: 'E‑mail vérifié',
   ogImage: '/vrchat-remix.png',
   description: 'Votre e‑mail a été vérifié. Vous pouvez vous connecter.',
   ogDescription: 'Votre e‑mail a été vérifié. Vous pouvez vous connecter.',
@@ -23,8 +27,8 @@ useSeoMeta({
     <div class="card">
       <p>Merci ! Votre e‑mail est confirmé. Vous pouvez maintenant vous connecter.</p>
       <div class="actions">
-        <NuxtLink class="save-btn" to="/login">Aller à la connexion</NuxtLink>
-        <NuxtLink class="link" to="/projects">Voir les projets</NuxtLink>
+        <NuxtLink class="save-btn" :to="{name: `login___${locale}`}">Aller à la connexion</NuxtLink>
+        <NuxtLink class="link" :to="{name: `projects___${locale}`}">Voir les projets</NuxtLink>
       </div>
     </div>
   </div>

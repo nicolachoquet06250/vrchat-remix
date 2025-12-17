@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const {locale} = useI18n()
+
 definePageMeta({
   name: 'root'
 })
@@ -12,7 +14,7 @@ useSeoMeta({
   twitterCard: 'app'
 })
 
-const goToProjects = () => navigateTo({ name: 'home' })
+const goToProjects = () => navigateTo({ name: `projects___${locale.value}` })
 
 type LatestUpdate = {
   ok: boolean
@@ -46,27 +48,27 @@ const scrollToUpdates = () => {
     <div class="hero-inner">
       <img src="/vrchat-remix.png" alt="Logo VRC Remix" class="hero-logo" />
       <h1>VRC Remix</h1>
-      <p class="tagline">Le hub pour découvrir, remixer et partager des projets VRChat.</p>
-      <p class="tagline">Recherchez par nom ou par tag, enregistrez des alertes et suivez facilement les nouveautés.</p>
+      <p class="tagline">{{ $t('index.tagline.1') }}</p>
+      <p class="tagline">{{ $t('index.tagline.2') }}</p>
 
       <div class="cta">
         <button class="btn cta-btn" type="button" @click="goToProjects">
-          Découvrir les projets
+          {{ $t('index.button-projects') }}
         </button>
       </div>
 
       <ul class="features">
         <li>
-          <span class="feature-title">Recherche multi-type</span>
-          <span class="feature-desc">Par nom ou par tag pour trouver rapidement le bon projet.</span>
+          <span class="feature-title">{{ $t('index.sections.1.title') }}</span>
+          <span class="feature-desc">{{ $t('index.sections.1.description') }}</span>
         </li>
         <li>
-          <span class="feature-title">Alertes personnalisées</span>
-          <span class="feature-desc">Enregistrez vos recherches et recevez une notification dès qu’il y a du nouveau.</span>
+          <span class="feature-title">{{ $t('index.sections.2.title') }}</span>
+          <span class="feature-desc">{{ $t('index.sections.2.description') }}</span>
         </li>
         <li>
-          <span class="feature-title">Partage simplifié</span>
-          <span class="feature-desc">Publiez vos projets et collaborez avec la communauté.</span>
+          <span class="feature-title">{{ $t('index.sections.3.title') }}</span>
+          <span class="feature-desc">{{ $t('index.sections.3.description') }}</span>
         </li>
       </ul>
 
@@ -81,7 +83,7 @@ const scrollToUpdates = () => {
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 4v13m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Voir les mises à jour
+        {{ $t('index.button-updates') }}
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M12 4v13m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -91,28 +93,30 @@ const scrollToUpdates = () => {
 
   <section class="updates" ref="updatesEl">
     <div class="updates-inner">
-      <h2 class="updates-title">Dernières updates</h2>
+      <h2 class="updates-title">{{ $t('index.last-update.title') }}</h2>
 
-      <div v-if="latestPending" class="updates-card">Chargement…</div>
-      <div v-else-if="latestError" class="updates-card error">Impossible de récupérer les updates. Réessayez plus tard.</div>
+      <div v-if="latestPending" class="updates-card">{{ $t('loading') }}</div>
+      <div v-else-if="latestError" class="updates-card error">{{ $t('index.last-update.error-1') }}</div>
       <div v-else>
         <div v-if="latestUpdate?.ok && latestUpdate.data" class="updates-card">
           <div class="updates-meta">
-            <span class="badge">Merge</span>
-            <time :datetime="latestUpdate.data.mergedAt">{{ new Date(latestUpdate.data.mergedAt).toLocaleString() }}</time>
+            <span class="badge">{{ $t('index.last-update.merge') }}</span>
+            <time :datetime="latestUpdate.data.mergedAt">
+              {{ new Date(latestUpdate.data.mergedAt).toLocaleString(locale) }}
+            </time>
           </div>
           <h3 class="update-title">{{ latestUpdate.data.title }}</h3>
           <p v-if="latestUpdate.data.message" class="update-message">
             <MDC :value="latestUpdate.data.message" tag="section" />
           </p>
           <p class="update-footer">
-            <a :href="latestUpdate.data.htmlUrl" target="_blank" rel="noopener noreferrer">Voir sur GitHub</a>
-            <span v-if="latestUpdate.data.author"> — par <img v-if="latestUpdate.data.authorAvatar" :src="latestUpdate.data.authorAvatar" alt="avatar github user" class="github-avatar">{{ latestUpdate.data.author }}</span>
+            <a :href="latestUpdate.data.htmlUrl" target="_blank" rel="noopener noreferrer">{{ $t('index.last-update.see-on-github') }}</a>
+            <span v-if="latestUpdate.data.author"> — {{ $t('index.last-update.by') }} <img v-if="latestUpdate.data.authorAvatar" :src="latestUpdate.data.authorAvatar" alt="avatar github user" class="github-avatar">{{ latestUpdate.data.author }}</span>
           </p>
         </div>
-        <div v-else-if="latestUpdate?.ok && !latestUpdate.data" class="updates-card">Aucun merge récent.</div>
+        <div v-else-if="latestUpdate?.ok && !latestUpdate.data" class="updates-card">{{ $t('index.last-update.no-data') }}</div>
         <div v-else class="updates-card warning">
-          Section non configurée. Définissez les variables NUXT_PUBLIC_GITHUB_OWNER et NUXT_PUBLIC_GITHUB_REPO.
+          {{ $t('index.last-update.error-2') }}
         </div>
       </div>
     </div>

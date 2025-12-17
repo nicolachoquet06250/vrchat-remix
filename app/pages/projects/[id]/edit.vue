@@ -2,6 +2,7 @@
 const route = useRoute()
 const id = Number(route.params.id)
 const router = useRouter()
+const {locale} = useI18n()
 
 definePageMeta({
   name: 'edit-project'
@@ -17,7 +18,8 @@ onMounted(() => {
 const { data, pending, error } = await useFetch(`/api/projects/${id}`)
 
 useSeoMeta({
-  ogTitle: computed(() => `Modifier le projet "${data.value?.name}"`),
+  title: () => `VRC Remix - Modifier le projet "${data.value?.name}"`,
+  ogTitle: () => `Modifier le projet "${data.value?.name}"`,
   ogImage: '/vrchat-remix.png',
   description: 'créer un nouveau projet remix',
   ogDescription: 'créer un nouveau projet remix',
@@ -194,39 +196,39 @@ async function onDeleteImage(imageId: number) {
 
 <template>
   <Head>
-    <Title>Modifier le projet "{{data!.name}}"</Title>
+    <Title>{{ $t('project.edit.title') }} "{{data!.name}}"</Title>
   </Head>
 
   <div class="container">
     <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-      <h1>Modifier le projet</h1>
+      <h1>{{ $t('project.edit.title') }}</h1>
 
       <UiSwitch
-          v-model="form.isPublic"
-          :label="{
-          before: 'Privé',
-          after: 'Publique'
+        v-model="form.isPublic"
+        :label="{
+          before: $t('project.edit.switch.private'),
+          after: $t('project.edit.switch.public')
         }"
       />
     </div>
-    <div v-if="pending">Chargement…</div>
-    <div v-else-if="error">Introuvable</div>
-    <div v-else-if="!isOwner">Accès refusé</div>
+    <div v-if="pending">{{ $t('loading') }}</div>
+    <div v-else-if="error">{{ $t('project.edit.not-found') }}</div>
+    <div v-else-if="!isOwner">{{ $t('project.edit.access-denied') }}</div>
     <form v-else class="form" @submit.prevent="onSave">
       <label class="float">
         <input v-model="form.name" type="text" required minlength="3" maxlength="200" placeholder=" " />
-        <span class="label-text">Nom</span>
+        <span class="label-text">{{ $t('project.edit.form.name') }}</span>
       </label>
       <label class="float">
         <textarea v-model="form.description" rows="6" maxlength="5000" placeholder=" "></textarea>
-        <span class="label-text">Description</span>
+        <span class="label-text">{{ $t('project.edit.form.description') }}</span>
       </label>
       <label class="float">
         <input v-model="form.tags" type="text" placeholder=" " />
-        <span class="label-text">Tags (séparés par des virgules)</span>
+        <span class="label-text">{{ $t('project.edit.form.tags') }}</span>
       </label>
       <div class="file-field">
-        <span class="file-label">Remplacer le fichier ZIP (optionnel)</span>
+        <span class="file-label">{{ $t('project.edit.form.replace-zip') }}</span>
         <div class="file-row">
           <input
             ref="zipInput"
@@ -235,15 +237,15 @@ async function onDeleteImage(imageId: number) {
             accept=".zip,application/zip"
             @change="(e:any)=>{ file = e.target.files?.[0] || null }"
           />
-          <button type="button" class="file-btn" @click="zipInput?.click()">Choisir un fichier ZIP</button>
-          <span class="filename" :class="{ empty: !file }">{{ file?.name || data?.fileName || 'Aucun fichier sélectionné' }}</span>
+          <button type="button" class="file-btn" @click="zipInput?.click()">{{ $t('project.edit.form.choose-zip') }}</button>
+          <span class="filename" :class="{ empty: !file }">{{ file?.name || data?.fileName || $t('project.edit.form.no-file-selected') }}</span>
         </div>
       </div>
 
       <div class="gallery">
         <div class="gallery-header">
-          <h2>Galerie d'images</h2>
-          <span class="hint">Ajoutez 1 à 4 images par envoi</span>
+          <h2>{{ $t('project.edit.form.gallery') }}</h2>
+          <span class="hint">{{ $t('project.edit.form.gallery-message') }}</span>
         </div>
         <div class="uploader">
           <input
@@ -255,12 +257,12 @@ async function onDeleteImage(imageId: number) {
             multiple
             @change="onSelectImages"
           />
-          <button type="button" class="file-btn" @click="imagesInput?.click()">Ajouter des images</button>
+          <button type="button" class="file-btn" @click="imagesInput?.click()">{{ $t('project.edit.form.add-images') }}</button>
           <button type="button" class="btn" :disabled="uploadingImages || imageFiles.length===0" @click="onUploadImages">
-            {{ uploadingImages ? 'Envoi…' : 'Uploader' }}
+            {{ uploadingImages ? $t('project.edit.form.send') : $t('project.edit.form.upload') }}
           </button>
           <div class="selected" v-if="imageFiles.length > 0">
-            {{ imageFiles.length }} image(s) sélectionnée(s)
+            {{ imageFiles.length }} {{ $t('project.edit.form.nb-selected-images') }}
           </div>
         </div>
         <div v-if="previewUrls.length > 0" class="thumbs">
@@ -273,17 +275,17 @@ async function onDeleteImage(imageId: number) {
             <img :src="`/api/projects/images/${img.id}`" :alt="img.fileName" />
             <div class="thumb-actions">
               <button type="button" class="danger" :disabled="deletingImageIds.includes(img.id)" @click="onDeleteImage(img.id)">
-                {{ deletingImageIds.includes(img.id) ? 'Suppression…' : 'Supprimer' }}
+                {{ deletingImageIds.includes(img.id) ? $t('project.edit.form.deletion') : $t('project.edit.form.delete') }}
               </button>
             </div>
           </div>
         </div>
-        <div v-else class="no-images">Aucune image pour le moment.</div>
+        <div v-else class="no-images">{{ $t('project.edit.form.no-images') }}</div>
       </div>
       <div class="actions">
-        <button type="submit" :disabled="saving" class="save-btn">Enregistrer</button>
-        <button type="button" class="danger" :disabled="deleting" @click="onDelete">Supprimer</button>
-        <NuxtLink :to="{name: 'project', params: {id}}" class="link btn">Annuler</NuxtLink>
+        <button type="submit" :disabled="saving" class="save-btn">{{ $t('project.edit.form.save') }}</button>
+        <button type="button" class="danger" :disabled="deleting" @click="onDelete">{{ $t('project.edit.form.delete') }}</button>
+        <NuxtLink :to="{name: `project___${locale}`, params: {id}}" class="link btn">{{ $t('project.edit.form.cancel') }}</NuxtLink>
       </div>
       <p v-if="errMsg" class="error">{{ errMsg }}</p>
     </form>

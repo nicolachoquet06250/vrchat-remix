@@ -115,37 +115,37 @@ async function onSubmit() {
 
 <template>
   <Head>
-    <Title>Créer un projet</Title>
+    <Title>{{ $t('project.create.tab.title') }}</Title>
   </Head>
 
   <div class="container">
     <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-      <h1>Nouveau projet</h1>
+      <h1>{{ $t('project.create.title') }}</h1>
 
       <UiSwitch
         v-model="isPublic"
         :label="{
-          before: 'Privé',
-          after: 'Publique'
+          before: $t('project.edit.switch.private'),
+          after: $t('project.edit.switch.public')
         }"
       />
     </div>
-    <div v-if="!user">Vous devez être connecté pour créer un projet.</div>
+    <div v-if="!user">{{ $t('project.create.must-be-connected') }}</div>
     <form v-else class="form" @submit.prevent="onSubmit">
       <label class="float">
         <input v-model="name" type="text" required minlength="3" maxlength="200" placeholder=" " />
-        <span class="label-text">Nom</span>
+        <span class="label-text">{{ $t('project.edit.form.name') }}</span>
       </label>
       <label class="float">
         <textarea v-model="description" rows="6" maxlength="5000" placeholder=" "></textarea>
-        <span class="label-text">Description</span>
+        <span class="label-text">{{ $t('project.edit.form.description') }}</span>
       </label>
       <label class="float">
         <input v-model="tags" type="text" placeholder=" " />
-        <span class="label-text">Tags (séparés par des virgules)</span>
+        <span class="label-text">{{ $t('project.edit.form.tags') }}</span>
       </label>
       <div class="file-field">
-        <span class="file-label">Fichier ZIP</span>
+        <span class="file-label">{{ $t('project.create.zip-file') }}</span>
         <div class="file-row">
           <input
             ref="zipInput"
@@ -155,14 +155,14 @@ async function onSubmit() {
             @change="handleFileChange"
             required
           />
-          <button type="button" class="file-btn" @click="zipInput?.click()">Choisir un fichier ZIP</button>
-          <span class="filename" :class="{ empty: !file }">{{ file?.name || 'Aucun fichier sélectionné' }}</span>
+          <button type="button" class="file-btn" @click="zipInput?.click()">{{ $t('project.edit.form.choose-zip') }}</button>
+          <span class="filename" :class="{ empty: !file }">{{ file?.name || $t('project.edit.form.no-file-selected') }}</span>
         </div>
       </div>
       <div class="gallery">
         <div class="gallery-header">
-          <h2>Galerie d'images</h2>
-          <span class="hint">Ajoutez 1 à 4 images (optionnel)</span>
+          <h2>{{ $t('project.edit.form.gallery') }}</h2>
+          <span class="hint">{{ $t('project.edit.form.gallery-message') }}</span>
         </div>
         <div class="uploader">
           <input
@@ -174,9 +174,9 @@ async function onSubmit() {
             multiple
             @change="onSelectImages"
           />
-          <button type="button" class="file-btn" @click="imagesInput?.click()">Ajouter des images</button>
+          <button type="button" class="file-btn" @click="imagesInput?.click()">{{ $t('project.edit.form.add-images') }}</button>
           <div class="selected" v-if="imageFiles.length > 0">
-            {{ imageFiles.length }} image(s) sélectionnée(s)
+            {{ imageFiles.length }} {{ $t('project.edit.form.nb-selected-images') }}
           </div>
         </div>
         <div v-if="previews.length > 0" class="thumbs">
@@ -186,7 +186,7 @@ async function onSubmit() {
         </div>
       </div>
       <div>
-        <button type="submit" class="create-btn" :disabled="saving">Créer</button>
+        <button type="submit" class="create-btn" :disabled="saving">{{ $t('project.create.create') }}</button>
       </div>
       <p v-if="error" class="error">{{ error }}</p>
     </form>
