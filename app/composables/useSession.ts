@@ -30,16 +30,21 @@ export function useSession() {
   async function login(emailOrUsername: string, password: string) {
     error.value = null
     try {
-      await $fetch('/api/auth/login', {
+      const res: any = await $fetch('/api/auth/login', {
         method: 'post',
         body: {emailOrUsername, password},
       })
 
+      // Deux cas: soit l'API renvoie un utilisateur (session créée), soit un challenge 2FA
+      if (res && res.twoFactorRequired && res.challengeId) {
+        return { twoFactorRequired: true, challengeId: res.challengeId }
+      }
+
       await refresh()
-      return true
+      return { success: true }
     } catch (err: any) {
       error.value = err.statusMessage || 'Erreur de connexion'
-      return false
+      return { success: false }
     }
   }
 

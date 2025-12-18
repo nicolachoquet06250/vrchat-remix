@@ -45,6 +45,9 @@
     "change": "Change password",
     "change-success": "Password changed successfully",
     "change-error": "Error while changing password",
+    "two-factor": "Two-factor authentication (2FA)",
+    "two-factor-hint": "Enable two-factor authentication by email to secure your logins.",
+    "two-factor-password": "Password required to modify 2FA",
     "placeholders": {
       "pseudo": "Your pseudo",
       "email": "Your email",

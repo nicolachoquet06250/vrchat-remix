@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { login, error, user } = useSession()
+const { login, error, user, refresh } = useSession()
 const router = useRouter()
 const route = useRoute()
 const {locale} = useI18n()
@@ -8,6 +8,9 @@ const emailOrUsername = ref('')
 const password = ref('')
 const submitting = ref(false)
 const resending = ref(false)
+const twoFaChallengeId = ref<string | null>(null)
+const twoFaCode = ref('')
+const verifying = ref(false)
 
 definePageMeta({
   name: 'login'
@@ -24,8 +27,13 @@ useSeoMeta({
 async function onSubmit() {
   submitting.value = true
   try {
-    const ok = await login(emailOrUsername.value, password.value)
-    if (ok) {
+    const res: any = await login(emailOrUsername.value, password.value)
+    if (res && res.twoFactorRequired && res.challengeId) {
+      twoFaChallengeId.value = res.challengeId
+      // afficher le step 2FA
+      return
+    }
+    if (res && res.success) {
       if (route.query.next) {
         await router.push(route.query.next as string);
         return;
@@ -51,6 +59,37 @@ async function onResend() {
     resending.value = false
   }
 }
+
+async function onVerify2fa() {
+  if (!twoFaChallengeId.value) return
+  verifying.value = true
+  error.value = null
+  try {
+    await $fetch('/api/auth/2fa-verify', {
+      method: 'post',
+      body: { challengeId: twoFaChallengeId.value, code: twoFaCode.value }
+    })
+    await refresh()
+    if (route.query.next) {
+      await router.push(route.query.next as string)
+      return
+    }
+    await router.push('/projects')
+  } catch (e: any) {
+    error.value = e.statusMessage || 'Code invalide'
+  } finally {
+    verifying.value = false
+  }
+}
+
+async function onResend2fa() {
+  if (!twoFaChallengeId.value || resending.value) return
+  resending.value = true
+  try {
+    await $fetch('/api/auth/2fa-resend', { method: 'post', body: { challengeId: twoFaChallengeId.value } })
+  } catch {}
+  finally { resending.value = false }
+}
 </script>
 
 <template>
@@ -64,7 +103,7 @@ async function onResend() {
       <p class="hint">{{ $t('login.subtitle') }}</p>
     </div>
 
-    <form @submit.prevent="onSubmit" class="form" novalidate>
+    <form @submit.prevent="onSubmit" class="form" novalidate v-if="!twoFaChallengeId">
       <label class="float">
         <input
           v-model="emailOrUsername"
@@ -111,6 +150,22 @@ async function onResend() {
           @click="onResend"
         >{{ resending ? $t('login.resend') : $t('login.resend-email') }}</button>
       </div>
+    </form>
+
+    <form v-else class="form" @submit.prevent="onVerify2fa">
+      <p>Un code à 6 chiffres vous a été envoyé par e‑mail. Saisissez-le ci‑dessous pour terminer la connexion.</p>
+      <label class="float">
+        <input v-model="twoFaCode" type="text" inputmode="numeric" pattern="\\d{6}" placeholder=" " required minlength="6" maxlength="6" autocomplete="one-time-code" />
+        <span class="label-text">Code 2FA</span>
+      </label>
+      <div class="actions">
+        <button type="button" class="link" @click="twoFaChallengeId = null">Retour</button>
+        <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+          <button type="button" class="link" :disabled="resending" @click="onResend2fa">Renvoyer le code</button>
+          <button type="submit" class="save-btn" :disabled="verifying || twoFaCode.length !== 6">{{ verifying ? 'Vérification…' : 'Vérifier' }}</button>
+        </div>
+      </div>
+      <div v-if="error" class="error"><p>{{ error }}</p></div>
     </form>
   </div>
 </template>

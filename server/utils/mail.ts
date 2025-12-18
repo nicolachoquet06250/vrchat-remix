@@ -111,6 +111,29 @@ export async function sendVerificationEmail(to: string, token: string, username?
   return t?.sendMail({ from, to, subject, text, html })
 }
 
+export async function sendTwoFactorCodeEmail(to: string, params: { code: string, username?: string }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+
+  const subject = `${appName} – Votre code de connexion`
+  const text = `Bonjour${params.username ? ' ' + params.username : ''},\n\nVoici votre code de vérification pour vous connecter: ${params.code}\n\nCe code expire dans 10 minutes.\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez cet e‑mail.`
+  const html = `
+    <div style="font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#111">
+      <h2 style="margin:0 0 16px">${appName} – Code de connexion</h2>
+      <p>Bonjour${params.username ? ' ' + params.username : ''},</p>
+      <p>Voici votre code de vérification pour vous connecter&nbsp;:</p>
+      <p style="font-size:24px;font-weight:700;letter-spacing:2px;background:#f6f6f6;border:1px solid #eee;padding:12px 16px;display:inline-block">${params.code}</p>
+      <p style="margin-top:16px">Ce code expire dans 10 minutes.</p>
+      <p style="color:#666;margin-top:24px">Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e‑mail.</p>
+      <p style="color:#999;font-size:12px;margin-top:24px">${appUrl}</p>
+    </div>
+  `
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
 export async function sendNewProjectAlert(to: string, params: { projectId: number, projectName: string, query: string, type: 'project'|'tag' }) {
   const env: MailEnv = process.env as any
   const appName = env.APP_NAME || 'VRC Remix'
@@ -138,6 +161,48 @@ export async function sendNewProjectAlert(to: string, params: { projectId: numbe
     type: params.type,
   }, { plainText: true })
 
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendTwoFactorEnabledEmail(to: string, params: { username?: string }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+
+  const subject = `${appName} – 2FA activée sur votre compte`
+  const text = `Bonjour${params.username ? ' ' + params.username : ''},\n\nLa double authentification par e‑mail a été activée sur votre compte.\nSi vous n'êtes pas à l'origine de ce changement, modifiez votre mot de passe et contactez le support.\n\n${appUrl}`
+  const html = `
+    <div style="font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#111">
+      <h2 style="margin:0 0 16px">${appName} – 2FA activée</h2>
+      <p>Bonjour${params.username ? ' ' + params.username : ''},</p>
+      <p>La double authentification par e‑mail a été <strong>activée</strong> sur votre compte.</p>
+      <p style="color:#666">Si vous n'êtes pas à l'origine de ce changement, modifiez votre mot de passe et contactez le support.</p>
+      <p style="color:#999;font-size:12px;margin-top:24px">${appUrl}</p>
+    </div>
+  `
+  const t = getTransporter()
+  return t?.sendMail({ from, to, subject, text, html })
+}
+
+export async function sendTwoFactorDisabledEmail(to: string, params: { username?: string }) {
+  const env: MailEnv = process.env as any
+  const appName = env.APP_NAME || 'VRC Remix'
+  const appUrl = env.APP_URL || 'http://localhost:3000'
+  const from = env.MAIL_FROM ? `${appName}<${env.MAIL_FROM}>` : `${appName} <no-reply@localhost>`
+
+  const subject = `${appName} – 2FA désactivée sur votre compte`
+  const text = `Bonjour${params.username ? ' ' + params.username : ''},\n\nLa double authentification par e‑mail a été désactivée sur votre compte.\nSi vous n'êtes pas à l'origine de ce changement, modifiez votre mot de passe et contactez le support.\n\n${appUrl}`
+  const html = `
+    <div style="font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;color:#111">
+      <h2 style="margin:0 0 16px">${appName} – 2FA désactivée</h2>
+      <p>Bonjour${params.username ? ' ' + params.username : ''},</p>
+      <p>La double authentification par e‑mail a été <strong>désactivée</strong> sur votre compte.</p>
+      <p style="color:#666">Si vous n'êtes pas à l'origine de ce changement, modifiez votre mot de passe et contactez le support.</p>
+      <p style="color:#999;font-size:12px;margin-top:24px">${appUrl}</p>
+    </div>
+  `
   const t = getTransporter()
   return t?.sendMail({ from, to, subject, text, html })
 }

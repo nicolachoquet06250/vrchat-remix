@@ -45,6 +45,9 @@
     "change": "Changer le mot de passe",
     "change-success": "Le mot de passe à été changé avec succès",
     "change-error": "Une erreur est survenue lors du changement du mot de passe",
+    "two-factor": "Double authentification (2FA)",
+    "two-factor-hint": "Activez la double authentification par e‑mail pour sécuriser vos connexions.",
+    "two-factor-password": "Mot de passe requis pour modifier le 2FA",
     "placeholders": {
       "pseudo": "Votre pseudo",
       "email": "Votre email",

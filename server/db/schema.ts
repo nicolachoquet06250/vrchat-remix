@@ -27,6 +27,13 @@ export const users = mysqlTable('users', {
   emailVerifiedAt: datetime('email_verified_at', { mode: 'date', fsp: 3 }),
   verificationToken: varchar('verification_token', { length: 255 }),
   verificationExpiresAt: datetime('verification_expires_at', { mode: 'date', fsp: 3 }),
+  // Flag d'activation 2FA (désactivé par défaut)
+  twoFactorEnabled: int('two_factor_enabled').notNull().default(0),
+  // Two‑factor auth (email code) flow
+  twoFactorToken: varchar('two_factor_token', { length: 255 }),
+  twoFactorCodeHash: varchar('two_factor_code_hash', { length: 255 }),
+  twoFactorExpiresAt: datetime('two_factor_expires_at', { mode: 'date', fsp: 3 }),
+  twoFactorAttempts: int('two_factor_attempts').notNull().default(0),
   // Password reset flow
   resetToken: varchar('reset_token', { length: 255 }),
   resetExpiresAt: datetime('reset_expires_at', { mode: 'date', fsp: 3 }),

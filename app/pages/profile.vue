@@ -151,6 +151,78 @@ const lang = computed({
   get: () => locale.value === 'en',
   set: (l: boolean) => changeLocale(l ? 'en' : 'fr')
 })
+
+// Logique 2FA
+const tfaStatus = ref<{ enabled: boolean } | null>(null)
+const tfaLoading = ref(true)
+const tfaError = ref<string | null>(null)
+const tfaPassword = ref('')
+const tfaSubmitting = ref(false)
+
+async function refresh2faStatus() {
+  tfaLoading.value = true
+  tfaError.value = null
+  try {
+    tfaStatus.value = await $fetch('/api/auth/2fa-status')
+  } catch (e: any) {
+    tfaError.value = e.statusMessage || 'Impossible de charger le statut 2FA'
+  } finally {
+    tfaLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  await refresh()
+  await refresh2faStatus()
+})
+
+const tfaEnabled = computed({
+  get: () => !!tfaStatus.value?.enabled,
+  set: async (value: boolean) => {
+    if (value) await enable2fa()
+    else await disable2fa()
+  }
+})
+
+async function enable2fa() {
+  if (!tfaPassword.value) {
+    tfaError.value = 'Mot de passe requis pour activer le 2FA'
+    tfaStatus.value = { enabled: false }
+    return
+  }
+  tfaSubmitting.value = true
+  tfaError.value = null
+  try {
+    await $fetch('/api/auth/2fa-enable', { method: 'post', body: { password: tfaPassword.value } })
+    tfaPassword.value = ''
+    await refresh2faStatus()
+  } catch (e: any) {
+    tfaError.value = e.statusMessage || 'Échec de l\'activation 2FA'
+    tfaStatus.value = { enabled: false }
+  } finally {
+    tfaSubmitting.value = false
+  }
+}
+
+async function disable2fa() {
+  if (!tfaPassword.value) {
+    tfaError.value = 'Mot de passe requis pour désactiver le 2FA'
+    tfaStatus.value = { enabled: true }
+    return
+  }
+  tfaSubmitting.value = true
+  tfaError.value = null
+  try {
+    await $fetch('/api/auth/2fa-disable', { method: 'post', body: { password: tfaPassword.value } })
+    tfaPassword.value = ''
+    await refresh2faStatus()
+  } catch (e: any) {
+    tfaError.value = e.statusMessage || 'Échec de la désactivation 2FA'
+    tfaStatus.value = { enabled: true }
+  } finally {
+    tfaSubmitting.value = false
+  }
+}
 </script>
 
 <template>
@@ -305,6 +377,30 @@ const lang = computed({
         </div>
       </section>
 
+      <section class="security-settings">
+        <h2>{{ $t('profil.two-factor') }}</h2>
+        <p class="hint">{{ $t('profil.two-factor-hint') }}</p>
+
+        <div v-if="tfaLoading">{{ $t('loading') }}</div>
+        <div v-else class="tfa-controls">
+          <div class="row">
+            <UiSwitch v-model="tfaEnabled" :disabled="tfaSubmitting" />
+            <span :class="{ 'status ok': tfaStatus?.enabled, 'status muted': !tfaStatus?.enabled }">
+              {{ tfaStatus?.enabled ? 'Activé' : 'Désactivé' }}
+            </span>
+          </div>
+
+          <label class="field" style="margin-top: 10px;">
+            <span class="label">{{ $t('profil.two-factor-password') }}</span>
+            <input v-model="tfaPassword" type="password" class="input" :placeholder="$t('profil.placeholders.current-password')" autocomplete="current-password" />
+          </label>
+
+          <div class="row" v-if="tfaError">
+            <span class="status err">{{ tfaError }}</span>
+          </div>
+        </div>
+      </section>
+
       <div class="actions" style="margin-bottom: 20px;">
         <NuxtLink class="link" :to="{
           name: meta.previousRoute?.name ?? `root___${locale}`,
@@ -396,4 +492,9 @@ svg > path { fill: light-dark(#000, #fff); }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .status.ok { color: #2e7d32; }
 .status.err { color: #b00020; }
+.status.muted { color: #888; }
+
+.security-settings { border: 1px solid #eee; border-radius: 8px; padding: 16px; display: grid; gap: 12px; }
+.security-settings h2 { margin: 0 0 4px 0; font-size: 16px; }
+.tfa-controls { display: grid; gap: 12px; }
 </style>

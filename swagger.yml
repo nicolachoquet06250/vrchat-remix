@@ -23,7 +23,10 @@ paths:
       tags: [auth]
       summary: Authentification par email/nom d'utilisateur et mot de passe
       description: |
-        Authentifie l'utilisateur et définit un cookie de session HttpOnly `session` via l'en‑tête `Set-Cookie`.
+        Si l'utilisateur a activé le 2FA e‑mail, cette route constitue l'étape 1 du flux: un code à 6 chiffres est envoyé par e‑mail
+        et la réponse indique que la double authentification est requise (`twoFactorRequired: true`) avec un `challengeId`.
+        Utilisez ensuite `POST /auth/2fa-verify` pour finaliser la connexion et recevoir le cookie de session.
+        Si le 2FA est désactivé, la session est créée immédiatement et l'utilisateur est renvoyé directement.
         Cette route ne nécessite pas d'authentification préalable.
       security: []
       requestBody:
@@ -38,6 +41,44 @@ paths:
                 password:
                   type: string
               required: [emailOrUsername, password]
+      responses:
+        '200':
+          description: Réponse variable selon l'état 2FA (utilisateur ou challenge 2FA)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      id: { type: integer }
+                      email: { type: string }
+                      username: { type: string }
+                  - type: object
+                    properties:
+                      twoFactorRequired: { type: boolean, example: true }
+                      challengeId: { type: string, description: Identifiant du défi 2FA }
+        '400': { description: Requête invalide }
+        '401': { description: Identifiants invalides ou email non vérifié }
+        '403': { description: Compte désactivé }
+
+  /auth/2fa-verify:
+    post:
+      tags: [auth]
+      summary: Vérifie le code 2FA reçu par e‑mail et crée la session
+      description: |
+        Étape 2 du flux de connexion 2FA. Vérifie le code à 6 chiffres pour le `challengeId` et, en cas de succès,
+        définit un cookie de session HttpOnly `session` via `Set-Cookie`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                challengeId: { type: string }
+                code: { type: string, description: Code 6 chiffres }
+              required: [challengeId, code]
       responses:
         '200':
           description: Utilisateur authentifié
@@ -57,8 +98,84 @@ paths:
                   email: { type: string }
                   username: { type: string }
         '400': { description: Requête invalide }
-        '401': { description: Identifiants invalides ou email non vérifié }
-        '403': { description: Compte désactivé }
+        '401': { description: Code invalide ou expiré }
+        '404': { description: Défi introuvable }
+
+  /auth/2fa-resend:
+    post:
+      tags: [auth]
+      summary: Renvoyer un code 2FA (génère un nouveau challenge)
+      description: Rengénère un code 2FA et renvoie un nouveau `challengeId`. Pas d'authentification requise.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                challengeId: { type: string }
+              required: [challengeId]
+      responses:
+        '200':
+          description: Nouveau challenge 2FA
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  twoFactorRequired: { type: boolean, example: true }
+                  challengeId: { type: string }
+
+  /auth/2fa-status:
+    get:
+      tags: [auth]
+      summary: État d'activation du 2FA pour l'utilisateur courant
+      responses:
+        '200':
+          description: État 2FA
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled: { type: boolean }
+
+  /auth/2fa-enable:
+    post:
+      tags: [auth]
+      summary: Activer le 2FA (rechallenge mot de passe requis)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string, format: password }
+              required: [password]
+      responses:
+        '200': { description: Activé }
+        '400': { description: Requête invalide }
+        '401': { description: Mot de passe invalide }
+
+  /auth/2fa-disable:
+    post:
+      tags: [auth]
+      summary: Désactiver le 2FA (rechallenge mot de passe requis)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string, format: password }
+              required: [password]
+      responses:
+        '200': { description: Désactivé }
+        '400': { description: Requête invalide }
+        '401': { description: Mot de passe invalide }
 
   /auth/register:
     post:
