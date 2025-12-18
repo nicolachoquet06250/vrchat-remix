@@ -1,0 +1,412 @@
+openapi: 3.0.3
+info:
+  title: VRChat Remix API
+  version: 1.0.0
+  description: |
+    Spécification OpenAPI statique générée à partir des fichiers dans `server/api`.
+    Les schémas d'entrées/sorties sont minimaux et pourront être affinés.
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Cookie de session HttpOnly défini après authentification (JWT signé côté serveur).
+  schemas: {}
+security:
+  - sessionCookie: []
+servers:
+  - url: /api
+paths:
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Authentification par email/nom d'utilisateur et mot de passe
+      description: |
+        Authentifie l'utilisateur et définit un cookie de session HttpOnly `session` via l'en‑tête `Set-Cookie`.
+        Cette route ne nécessite pas d'authentification préalable.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                emailOrUsername:
+                  type: string
+                password:
+                  type: string
+              required: [emailOrUsername, password]
+      responses:
+        '200':
+          description: Utilisateur authentifié
+          headers:
+            Set-Cookie:
+              description: >-
+                Cookie de session `session` (HttpOnly, SameSite, Path=/, éventuellement Secure) défini à la connexion.
+              schema:
+                type: string
+              example: session=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/; HttpOnly; SameSite=Lax
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
+                  email: { type: string }
+                  username: { type: string }
+        '400': { description: Requête invalide }
+        '401': { description: Identifiants invalides ou email non vérifié }
+        '403': { description: Compte désactivé }
+
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Créer un compte
+      description: |
+        Crée un nouvel utilisateur. Cette route est publique et ne nécessite pas d'authentification.
+        Selon la configuration, une vérification d'e‑mail peut être requise avant la connexion.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+              required: [email, username, password]
+      responses:
+        '200':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: integer }
+                  email: { type: string }
+                  username: { type: string }
+        '400': { description: Requête invalide }
+        '409': { description: Conflit (email ou nom d'utilisateur déjà utilisé) }
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Déconnexion
+      description: Invalide la session côté client en supprimant/expirant le cookie `session`.
+      responses:
+        '200':
+          description: Déconnecté
+          headers:
+            Set-Cookie:
+              description: Cookie `session` vidé/expiré (ex. `Max-Age=0`).
+              schema:
+                type: string
+              example: session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax
+
+  /projects:
+    get:
+      tags: [projects]
+      summary: Lister les projets publics (ou les miens si demandé)
+      description: Accessible sans authentification pour la liste publique. Si `mineOnly=true`, nécessite une session.
+      security: []
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string, maxLength: 200 }
+          required: false
+          description: Recherche par nom
+        - in: query
+          name: tag
+          schema: { type: string, maxLength: 100 }
+          required: false
+          description: Filtrer par tag
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+        - in: query
+          name: mineOnly
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Liste paginée de projets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                  total: { type: integer }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+    post:
+      tags: [projects]
+      summary: Créer un projet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: Projet créé }
+        '400': { description: Requête invalide }
+        '401': { description: Authentification requise }
+
+  /projects/{id}:
+    get:
+      tags: [projects]
+      summary: Récupérer un projet par son identifiant
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: Projet }
+        '404': { description: Non trouvé }
+    patch:
+      tags: [projects]
+      summary: Mettre à jour un projet
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: Projet mis à jour }
+        '400': { description: Requête invalide }
+        '401': { description: Authentification requise }
+        '404': { description: Non trouvé }
+    delete:
+      tags: [projects]
+      summary: Supprimer un projet
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: Projet supprimé }
+        '401': { description: Authentification requise }
+        '404': { description: Non trouvé }
+
+  /projects/{id}/images:
+    get:
+      tags: [projects, images]
+      summary: Lister les images d'un projet
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: Liste d'images }
+        '404': { description: Projet non trouvé }
+    post:
+      tags: [projects, images]
+      summary: Importer une image pour un projet
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200': { description: Image importée }
+        '400': { description: Requête invalide }
+        '401': { description: Authentification requise }
+
+  /projects/images/{imageId}:
+    get:
+      tags: [projects, images]
+      summary: Récupérer une image par son identifiant
+      security: []
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Flux binaire de l'image
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404': { description: Non trouvé }
+    delete:
+      tags: [projects, images]
+      summary: Supprimer une image par son identifiant
+      parameters:
+        - in: path
+          name: imageId
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: Image supprimée }
+        '401': { description: Authentification requise }
+        '404': { description: Non trouvé }
+
+  /projects/images/carousel-image:
+    get:
+      tags: [projects, images]
+      summary: Récupérer l'image du carrousel
+      security: []
+      responses:
+        '200':
+          description: Image
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /projects/images/og-image:
+    get:
+      tags: [projects, images]
+      summary: Récupérer l'OpenGraph image
+      security: []
+      responses:
+        '200':
+          description: Image
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /search-alerts:
+    get:
+      tags: [search-alerts]
+      summary: Lister les alertes de recherche
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [search-alerts]
+      summary: Créer une alerte de recherche
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: Crée }
+        '400': { description: Requête invalide }
+        '401': { description: Authentification requise }
+
+  /search-alerts/{id}:
+    delete:
+      tags: [search-alerts]
+      summary: Supprimer une alerte de recherche
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: Supprimée }
+        '401': { description: Authentification requise }
+        '404': { description: Non trouvé }
+
+  /creators/{id}:
+    get:
+      tags: [creators]
+      summary: Récupérer un créateur par son identifiant
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: OK }
+        '404': { description: Non trouvé }
+
+  /users/{id}/avatar:
+    get:
+      tags: [users, avatar]
+      summary: Récupérer l'avatar d'un utilisateur
+      security: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Flux binaire de l'avatar
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404': { description: Non trouvé }
+
+  /users/avatar:
+    post:
+      tags: [users, avatar]
+      summary: Mettre à jour mon avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200': { description: OK }
+        '400': { description: Requête invalide }
+        '401': { description: Authentification requise }
+
+  /updates/latest:
+    get:
+      tags: [updates]
+      summary: Dernières mises à jour du projet (dépôt)
+      security: []
+      responses:
+        '200': { description: OK }
+
+  /admin/users:
+    get:
+      tags: [admin]
+      summary: Lister les utilisateurs (admin)
+      responses:
+        '200': { description: OK }
