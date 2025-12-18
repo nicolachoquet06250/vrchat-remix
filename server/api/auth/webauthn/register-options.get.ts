@@ -1,20 +1,65 @@
-import { generateRegistrationOptions } from '@simplewebauthn/server'
-import { requireAuth } from '~~/server/utils/auth'
-import { getDb } from '~~/server/db/client'
-import { users } from '~~/server/db/schema'
-import { eq } from 'drizzle-orm'
-import { getWebAuthnConfig } from '~~/server/utils/webauthn'
+import {generateRegistrationOptions} from '@simplewebauthn/server'
+import {requireAuth} from '~~/server/utils/auth'
+import {getDb} from '~~/server/db/client'
+import {authenticators, users} from '~~/server/db/schema'
+import {eq, sql} from 'drizzle-orm'
+import {getWebAuthnConfig} from '~~/server/utils/webauthn'
+
+async function getUser(session: any) {
+  const userId = Number(session.sub);
+  const db = getDb();
+
+  const rows = await db
+      .select({
+        user: users,
+        authenticator: sql`CONVERT(
+          COALESCE(
+            (SELECT JSON_ARRAYAGG(
+                JSON_ARRAY(
+                  ${authenticators.id},
+                  ${authenticators.userId},
+                  ${authenticators.publicKey},
+                  ${authenticators.counter},
+                  ${authenticators.deviceType},
+                  ${authenticators.backedUp},
+                  ${authenticators.transports},
+                  ${authenticators.createdAt}
+                )
+              )
+              FROM ${authenticators}
+              WHERE ${authenticators.userId} = ${users.id}),
+            JSON_ARRAY()
+          )
+          USING utf8mb4
+        )`.as('authenticators'),
+      })
+      .from(users)
+      .leftJoin(authenticators, eq(authenticators.userId, users.id))
+      .where(eq(users.id, userId));
+
+  if (rows.length === 0) return null;
+
+  return {
+    ...rows[0].user,
+    // authenticators: rows
+    //     .map((r) => r.authenticator)
+    //     .filter((a) => a !== null), // left join => peut être null
+  };
+}
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)
   const { rpID, rpName } = getWebAuthnConfig(event)
   const db = getDb()
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, Number(session.sub)),
-    with: {
-      authenticators: true
-    }
-  })
+
+  const user = process.env.DB_ENGINE === 'mariadb'
+      ? await getUser(session)
+      : await db.query.users.findFirst({
+        where: eq(users.id, Number(session.sub)),
+        with: {
+          authenticators: true
+        }
+      })
 
   if (!user) {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
