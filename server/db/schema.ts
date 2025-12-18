@@ -50,6 +50,8 @@ export const projects = mysqlTable('projects', {
   // Compteur de privatisations effectuées par un modérateur
   privateStrikeCount: int('private_strike_count').notNull().default(0),
   lastPrivatedAt: datetime('last_privated_at', { mode: 'date', fsp: 3 }),
+  // Lien Github alternatif au zip stocké en base
+  githubUrl: varchar('github_url', { length: 300 }),
   // Nouveau stockage fichier (zip) en base
   fileName: varchar('file_name', { length: 255 }),
   fileType: varchar('file_type', { length: 100 }),

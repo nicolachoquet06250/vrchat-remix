@@ -34,7 +34,7 @@ export async function getProjectWithTags(projectId: number): Promise<
     .leftJoin(tags, eq(projectTags.tagId, tags.id))
     .where(eq(projectTags.projectId, projectId))
   const tagList = pts.map((r) => r.tags?.name).filter(Boolean) as string[]
-  // Ne pas renvoyer le blob; exposer un indicateur et les métadonnées seulement
+  // Ne pas renvoyer le blob ; exposer un indicateur et les métadonnées seulement
   const { fileData, ...rest } = proj as any
   // Fetch creator information
   let creatorUsername: string | undefined = undefined
@@ -53,7 +53,7 @@ export async function getProjectWithTags(projectId: number): Promise<
 
   return {
     ...rest,
-    hasFile: Boolean(proj.fileName && proj.fileSize),
+    hasFile: Boolean(proj.githubUrl ? true : (proj.fileName && proj.fileSize)),
     tags: tagList,
     creatorUsername,
     creatorHasAvatar,

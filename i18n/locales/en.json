@@ -95,7 +95,8 @@
       "mark-private": "Make private",
       "reported": "Thanks, your report has been sent.",
       "privated": "The project has been set to private.",
-      "deleted": "The project was deleted (3rd private)."
+      "deleted": "The project was deleted (3rd private).",
+      "github": "GitHub repository"
     },
     "edit": {
       "title": "Update project",
@@ -131,6 +132,21 @@
       "title": "New project",
       "must-be-connected": "You must be connected to create a project.",
       "zip-file": "ZIP file",
+      "tabs": {
+        "zip": "Upload ZIP",
+        "github": "GitHub link"
+      },
+      "github": {
+        "label": "GitHub repository URL",
+        "placeholder": "https://github.com/owner/repo or /tree/branche",
+        "hint": "You can reference a public GitHub repository. The ZIP file will be downloaded automatically when downloading.",
+        "example": "Example: https://github.com/vercel/next.js"
+      },
+      "errors": {
+        "zip-missing": "Select a .zip file",
+        "zip-extension": "The file must be a .zip file",
+        "github-missing": "Define a GitHub link"
+      },
       "create": "Create"
     }
   },

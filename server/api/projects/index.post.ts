@@ -13,6 +13,8 @@ const FieldsSchema = z.object({
   // comma-separated tags provided via text field
   tags: z.string().optional(),
   isPublic: z.union([z.literal('true'), z.literal('false')]).optional(),
+  // URL Github alternative à l'upload de zip
+  githubUrl: z.string().url().optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -50,14 +52,48 @@ export default defineEventHandler(async (event) => {
   }
   const { name, description, tags } = parsed.data
   const isPublic = parsed.data.isPublic ? parsed.data.isPublic === 'true' : true
-
-  if (!filePart) {
-    throw createError({ statusCode: 400, statusMessage: 'Le fichier zip est requis' })
+  const githubUrlRaw = parsed.data.githubUrl
+  // parse/valider github URL si fournie
+  let githubUrl: string | undefined
+  if (githubUrlRaw && githubUrlRaw.trim().length > 0) {
+    const u = githubUrlRaw.trim()
+    try {
+      const url = new URL(u)
+      if (url.hostname !== 'github.com') {
+        throw createError({statusCode: 400, statusMessage: 'bad host'})
+      }
+      const parts = url.pathname.replace(/\.git$/,'').split('/').filter(Boolean)
+      if (parts.length < 2) throw new Error('path')
+      // autoriser /owner/repo ou /owner/repo/ et éventuellement /tree/branch
+      const owner = parts[0]
+      const repo = parts[1]
+      let ref: string | undefined
+      const treeIdx = parts.indexOf('tree')
+      if (treeIdx >= 0 && parts.length > treeIdx + 1) {
+        ref = parts[treeIdx + 1]
+      }
+      // on stocke l'URL normalisée (sans .git), on garde /tree/ref si présent
+      githubUrl = `https://github.com/${owner}/${repo}` + (ref ? `/tree/${ref}` : '')
+    } catch (e) {
+      throw createError({ statusCode: 400, statusMessage: 'URL GitHub invalide. Exemple: https://github.com/owner/repo ou https://github.com/owner/repo/tree/branch' })
+    }
   }
-  const filename = filePart.filename || 'project.zip'
-  // Basic ZIP validation by extension and minimal signature if available
-  if (!filename.toLowerCase().endsWith('.zip')) {
-    throw createError({ statusCode: 400, statusMessage: 'Le fichier doit être un .zip' })
+
+  // Règles d'exclusivité: soit un zip, soit un githubUrl
+  if (!filePart && !githubUrl) {
+    throw createError({ statusCode: 400, statusMessage: 'Veuillez fournir un fichier .zip ou un lien de dépôt GitHub' })
+  }
+  if (filePart && githubUrl) {
+    throw createError({ statusCode: 400, statusMessage: 'Merci de choisir soit un .zip soit un lien GitHub, pas les deux' })
+  }
+
+  let filename = 'project.zip'
+  if (filePart) {
+    filename = filePart.filename || 'project.zip'
+    // Basic ZIP validation by extension and minimal signature if available
+    if (!filename.toLowerCase().endsWith('.zip')) {
+      throw createError({ statusCode: 400, statusMessage: 'Le fichier doit être un .zip' })
+    }
   }
 
   // Validate and limit images (optional, up to 4)
@@ -91,10 +127,11 @@ export default defineEventHandler(async (event) => {
     name,
     description,
     isPublic: isPublic ? 1 : 0,
-    fileName: filename,
-    fileType: 'application/zip',
-    fileSize: (filePart.data as any).length,
-    fileData: filePart.data as any,
+    githubUrl,
+    fileName: filePart ? filename : null,
+    fileType: filePart ? 'application/zip' : null,
+    fileSize: filePart ? filePart.data.length : null,
+    fileData: filePart ? filePart.data : null,
   })
 
   const created = await db.query.projects.findFirst({

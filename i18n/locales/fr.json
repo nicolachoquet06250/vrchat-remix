@@ -94,7 +94,8 @@
       "mark-private": "Passer en privé",
       "reported": "Merci, votre signalement a été envoyé.",
       "privated": "Le projet a été passé en privé.",
-      "deleted": "Le projet a été supprimé (3e mise en privé)."
+      "deleted": "Le projet a été supprimé (3e mise en privé).",
+      "github": "Répository GitHub"
     },
     "edit": {
       "title": "Modifier le projet",
@@ -131,6 +132,21 @@
       "title": "Nouveau projet",
       "must-be-connected": "Vous devez être connecté pour créer un projet.",
       "zip-file": "Fichier ZIP",
+      "tabs": {
+        "zip": "Uploader un ZIP",
+        "github": "Lien GitHub"
+      },
+      "github": {
+        "label": "URL du dépôt GitHub",
+        "placeholder": "https://github.com/owner/repo ou /tree/branche",
+        "hint": "Vous pouvez référencer un dépôt public GitHub. Le zip sera téléchargé automatiquement lors du téléchargement.",
+        "example": "Exemple: https://github.com/vercel/next.js"
+      },
+      "errors": {
+        "zip-missing": "Veuillez sélectionner un fichier .zip",
+        "zip-extension": "Le fichier doit être un .zip",
+        "github-missing": "Veuillez saisir une URL GitHub"
+      },
       "create": "Créer"
     }
   },

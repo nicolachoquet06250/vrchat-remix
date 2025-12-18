@@ -18,6 +18,9 @@ useSeoMeta({
 const name = ref('')
 const description = ref('')
 const file = ref<File | null>(null)
+// Onglets: 'zip' ou 'github'
+const selectedTab = ref<'zip' | 'github'>('zip')
+const githubUrl = ref('')
 const tags = ref('') // comma-separated
 const error = ref<string | null>(null)
 const saving = ref(false)
@@ -73,19 +76,29 @@ async function onSubmit() {
   }
   saving.value = true
   try {
-    if (!file.value) {
-      error.value = 'Veuillez sélectionner un fichier .zip'
-      return
-    }
-    if (!file.value.name.toLowerCase().endsWith('.zip')) {
-      error.value = 'Le fichier doit être un .zip'
-      return
-    }
     const fd = new FormData()
     fd.set('name', name.value)
     if (description.value) fd.set('description', description.value)
     if (tags.value) fd.set('tags', tags.value)
-    fd.set('file', file.value)
+    // Onglet sélectionné: ajouter soit le fichier ZIP, soit l'URL GitHub
+    if (selectedTab.value === 'zip') {
+      if (!file.value) {
+        error.value = $t('project.create.errors.zip-missing') as string
+        return
+      }
+      if (!file.value.name.toLowerCase().endsWith('.zip')) {
+        error.value = $t('project.create.errors.zip-extension') as string
+        return
+      }
+      fd.set('file', file.value)
+    } else {
+      const url = githubUrl.value.trim()
+      if (!url) {
+        error.value = $t('project.create.errors.github-missing') as string
+        return
+      }
+      fd.set('githubUrl', url)
+    }
     // append optional images (max 4)
     if (imageFiles.value.length > 4) {
       error.value = 'Maximum 4 images par envoi'
@@ -104,7 +117,7 @@ async function onSubmit() {
       if (id) await router.push(`/projects/${id}`)
       else await router.push('/projects')
     } catch (err: any) {
-        error.value = err.value.statusMessage || 'Erreur lors de la création'
+        error.value = err?.value?.statusMessage || 'Erreur lors de la création'
         return
     }
   } finally {
@@ -144,7 +157,17 @@ async function onSubmit() {
         <input v-model="tags" type="text" placeholder=" " />
         <span class="label-text">{{ $t('project.edit.form.tags') }}</span>
       </label>
-      <div class="file-field">
+      <!-- Tabs: ZIP / GitHub -->
+      <div class="tabs">
+        <button type="button" class="tab" :class="{ active: selectedTab === 'zip' }" @click="selectedTab = 'zip'">
+          {{ $t('project.create.tabs.zip') }}
+        </button>
+        <button type="button" class="tab" :class="{ active: selectedTab === 'github' }" @click="selectedTab = 'github'">
+          {{ $t('project.create.tabs.github') }}
+        </button>
+      </div>
+
+      <div v-if="selectedTab === 'zip'" class="file-field">
         <span class="file-label">{{ $t('project.create.zip-file') }}</span>
         <div class="file-row">
           <input
@@ -153,11 +176,18 @@ async function onSubmit() {
             type="file"
             accept=".zip,application/zip"
             @change="handleFileChange"
-            required
           />
           <button type="button" class="file-btn" @click="zipInput?.click()">{{ $t('project.edit.form.choose-zip') }}</button>
           <span class="filename" :class="{ empty: !file }">{{ file?.name || $t('project.edit.form.no-file-selected') }}</span>
         </div>
+      </div>
+
+      <div v-else class="github-field">
+        <label class="float">
+          <input v-model="githubUrl" type="url" inputmode="url" :placeholder="$t('project.create.github.placeholder') as string" />
+          <span class="label-text">{{ $t('project.create.github.label') }}</span>
+        </label>
+        <p class="hint small">{{ $t('project.create.github.hint') }}</p>
       </div>
       <div class="gallery">
         <div class="gallery-header">
@@ -202,12 +232,18 @@ textarea, input { width: 100%; }
 .gallery { display: grid; gap: 10px; }
 .gallery-header { display: flex; align-items: center; gap: 8px; }
 .gallery-header h2 { font-size: 16px; margin: 0; }
-.hint { color: #666; font-size: 12px; }
+.hint { color: light-dark(#f4f4f4, #1e1e1e); font-size: 12px; }
 .uploader { display: flex; gap: 8px; align-items: center; }
-.selected { color: #333; font-size: 13px; }
+.selected { color: light-dark(#333, #ddd); font-size: 13px; }
 .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
-.thumb { position: relative; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+.thumb { position: relative; border: 1px solid light-dark(#eee, #333); border-radius: 8px; overflow: hidden; }
 .thumb img { width: 100%; height: 120px; object-fit: cover; display: block; }
+
+/* Tabs styles */
+.tabs { display: inline-flex; gap: 8px; background: light-dark(#f4f4f4, #1e1e1e); padding: 6px; border-radius: 10px; margin: 8px 0 4px; }
+.tab { border: none; background: transparent; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 500; color: light-dark(#333, #ddd); }
+.tab.active { background: light-dark(#ffffff, #2a2a2a); box-shadow: 0 1px 2px light-dark(rgba(0,0,0,0.08), rgba(0,0,0,0.4)); }
+.github-field .small { font-size: 12px; color: light-dark(#666, #aaa); }
 
 /* Custom file inputs */
 .file-field { display: grid; gap: 6px; }
