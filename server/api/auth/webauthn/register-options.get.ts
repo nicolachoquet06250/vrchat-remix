@@ -39,12 +39,7 @@ async function getUser(session: any) {
 
   if (rows.length === 0) return null;
 
-  return {
-    ...rows[0].user,
-    // authenticators: rows
-    //     .map((r) => r.authenticator)
-    //     .filter((a) => a !== null), // left join => peut être null
-  };
+  return rows[0].user;
 }
 
 export default defineEventHandler(async (event) => {
