@@ -1,0 +1,1 @@
+ALTER TABLE `authenticators` MODIFY COLUMN `public_key` blob NOT NULL;

@@ -48,6 +48,14 @@
     "two-factor": "Double authentification (2FA)",
     "two-factor-hint": "Activez la double authentification par e‑mail pour sécuriser vos connexions.",
     "two-factor-password": "Mot de passe requis pour modifier le 2FA",
+    "webauthn": {
+      "title": "Connexion par empreinte digitale",
+      "hint": "Utilisez votre capteur d'empreinte digitale ou votre clé de sécurité pour vous connecter plus rapidement.",
+      "register": "Enregistrer une empreinte",
+      "login": "Se connecter avec l'empreinte",
+      "success": "Empreinte enregistrée avec succès !",
+      "error": "Erreur lors de l'enregistrement ou de la connexion."
+    },
     "placeholders": {
       "pseudo": "Votre pseudo",
       "email": "Votre email",
@@ -201,7 +209,11 @@
     "forgot-password": "Mot de passe oublié ?",
     "create-account": "Créer un compte",
     "resend": "Renvoi...",
-    "resend-email": "Renvoyer l’e‑mail de vérification"
+    "resend-email": "Renvoyer l’e‑mail de vérification",
+    "tabs": {
+      "password": "Mot de passe",
+      "webauthn": "Empreinte"
+    }
   },
   "register": {
     "tab": {

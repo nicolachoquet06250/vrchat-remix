@@ -176,6 +176,7 @@ onMounted(async () => {
   await refresh2faStatus()
 })
 
+import { startRegistration } from '@simplewebauthn/browser'
 const tfaEnabled = computed({
   get: () => !!tfaStatus.value?.enabled,
   set: async (value: boolean) => {
@@ -221,6 +222,31 @@ async function disable2fa() {
     tfaStatus.value = { enabled: true }
   } finally {
     tfaSubmitting.value = false
+  }
+}
+
+// WebAuthn
+const webauthnLoading = ref(false)
+const webauthnError = ref<string | null>(null)
+const webauthnSuccess = ref<string | null>(null)
+
+async function onRegisterFingerprint() {
+  webauthnLoading.value = true
+  webauthnError.value = null
+  webauthnSuccess.value = null
+  try {
+    const options = await $fetch('/api/auth/webauthn/register-options')
+    const attestation = await startRegistration(options as any)
+    await $fetch('/api/auth/webauthn/register-verify', {
+      method: 'post',
+      body: attestation
+    })
+    localStorage.setItem('webauthn_registered', 'true')
+    webauthnSuccess.value = 'Empreinte enregistrée avec succès !'
+  } catch (e: any) {
+    webauthnError.value = e.statusMessage || 'Erreur lors de l\'enregistrement de l\'empreinte'
+  } finally {
+    webauthnLoading.value = false
   }
 }
 </script>
@@ -398,6 +424,24 @@ async function disable2fa() {
           <div class="row" v-if="tfaError">
             <span class="status err">{{ tfaError }}</span>
           </div>
+        </div>
+      </section>
+
+      <section class="security-settings">
+        <h2>{{ $t('profil.webauthn.title') }}</h2>
+        <p class="hint">{{ $t('profil.webauthn.hint') }}</p>
+
+        <div class="row">
+          <button class="btn" :disabled="webauthnLoading" @click="onRegisterFingerprint">
+            {{ webauthnLoading ? 'Chargement…' : $t('profil.webauthn.register') }}
+          </button>
+        </div>
+
+        <div class="row" v-if="webauthnError">
+          <span class="status err">{{ webauthnError }}</span>
+        </div>
+        <div class="row" v-if="webauthnSuccess">
+          <span class="status ok">{{ webauthnSuccess }}</span>
         </div>
       </section>
 

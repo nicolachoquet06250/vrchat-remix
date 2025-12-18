@@ -14,6 +14,14 @@ const longblob = customType<LongBlobProps>({
   fromDriver: (value: Buffer) => value,
 });
 
+const blob = customType<LongBlobProps>({
+  dataType: ()=> 'blob',
+  // ici tu pourrais compresser, encoder, etc.
+  toDriver: (value: Buffer) => value,
+  // idem, décompression éventuelle
+  fromDriver: (value: Buffer) => value,
+});
+
 export const users = mysqlTable('users', {
   id: int('id').autoincrement().primaryKey(),
   email: varchar('email', { length: 255 }).notNull(),
@@ -132,28 +140,6 @@ export const projectFavorites = mysqlTable('project_favorites', {
   index('pf_project_idx').on(table.projectId),
 ])
 
-export const usersRelations = relations(users, ({ many }) => ({
-  avatar: many(userAvatars),
-}))
-
-export const projectsRelations = relations(projects, ({ many }) => ({
-  tags: many(projectTags),
-  images: many(projectImages)
-}))
-
-export const tagsRelations = relations(tags, ({ many }) => ({
-  projects: many(projectTags)
-}))
-
-export const projectImagesRelations = relations(projectImages, ({ }) => ({}))
-
-export const userAvatarsRelations = relations(userAvatars, ({ one }) => ({
-  user: one(users, {
-    fields: [userAvatars.userId],
-    references: [users.id],
-  })
-}))
-
 // Recherches sauvegardées pour alertes e‑mail
 export const savedSearches = mysqlTable('saved_searches', {
   id: int('id').autoincrement().primaryKey(),
@@ -197,6 +183,51 @@ export const downloads = mysqlTable('downloads', {
   index('dl_created_idx').on(table.createdAt),
 ])
 
+// WebAuthn authenticators
+export const authenticators = mysqlTable('authenticators', {
+  id: varchar('id', { length: 255 }).primaryKey(), // credentialID (base64url)
+  userId: int('user_id').notNull(),
+  publicKey: blob('public_key').notNull(),
+  counter: int('counter').notNull().default(0),
+  deviceType: varchar('device_type', { length: 32 }).notNull(),
+  backedUp: int('backed_up').notNull().default(0),
+  transports: varchar('transports', { length: 255 }), // comma-separated
+  createdAt: datetime('created_at', { mode: 'date', fsp: 3 })
+      .notNull().default(sql`CURRENT_TIMESTAMP(3)`),
+}, (table) => [
+  index('auth_user_idx').on(table.userId),
+])
+
+export const usersRelations = relations(users, ({ many }) => ({
+  avatar: many(userAvatars),
+  authenticators: many(authenticators),
+}))
+
+export const authenticatorsRelations = relations(authenticators, ({ one }) => ({
+  user: one(users, {
+    fields: [authenticators.userId],
+    references: [users.id],
+  }),
+}))
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+  tags: many(projectTags),
+  images: many(projectImages)
+}))
+
+export const tagsRelations = relations(tags, ({ many }) => ({
+  projects: many(projectTags)
+}))
+
+export const projectImagesRelations = relations(projectImages, ({ }) => ({}))
+
+export const userAvatarsRelations = relations(userAvatars, ({ one }) => ({
+  user: one(users, {
+    fields: [userAvatars.userId],
+    references: [users.id],
+  })
+}))
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type Project = typeof projects.$inferSelect
@@ -209,3 +240,4 @@ export type UserAvatar = typeof userAvatars.$inferSelect
 export type SavedSearch = typeof savedSearches.$inferSelect
 export type ProjectReport = typeof projectReports.$inferSelect
 export type Download = typeof downloads.$inferSelect
+export type Authenticator = typeof authenticators.$inferSelect

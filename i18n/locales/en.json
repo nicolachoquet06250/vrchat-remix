@@ -48,6 +48,14 @@
     "two-factor": "Two-factor authentication (2FA)",
     "two-factor-hint": "Enable two-factor authentication by email to secure your logins.",
     "two-factor-password": "Password required to modify 2FA",
+    "webauthn": {
+      "title": "Fingerprint Login",
+      "hint": "Use your fingerprint sensor or security key to log in faster.",
+      "register": "Register fingerprint",
+      "login": "Login with fingerprint",
+      "success": "Fingerprint registered successfully!",
+      "error": "Error during registration or login."
+    },
     "placeholders": {
       "pseudo": "Your pseudo",
       "email": "Your email",
@@ -201,7 +209,11 @@
     "forgot-password": "forgot your password ?",
     "create-account": "Create an account",
     "resend": "Resend....",
-    "resend-email": "Resend verification email"
+    "resend-email": "Resend verification email",
+    "tabs": {
+      "password": "Password",
+      "webauthn": "Fingerprint"
+    }
   },
   "register": {
     "tab": {
