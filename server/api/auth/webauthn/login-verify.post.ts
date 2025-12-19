@@ -1,7 +1,7 @@
 import { verifyAuthenticationResponse } from '@simplewebauthn/server'
 import { getDb } from '~~/server/db/client'
 import {users, authenticators, type Authenticator, type User} from '~~/server/db/schema'
-import {eq, sql} from 'drizzle-orm'
+import {eq} from 'drizzle-orm'
 import { createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
 import { getWebAuthnConfig } from '~~/server/utils/webauthn'
 
@@ -18,20 +18,15 @@ function publicKeyFromDrizzleStringToUint8Array(s: string): Uint8Array {
 
 async function getUser(userId: number) {
   const db = getDb();
-
-  const rows = await db
+  const u = await db
       .select()
       .from(users)
-      .leftJoin(authenticators, eq(authenticators.userId, users.id))
       .where(eq(users.id, userId)) as unknown as (User & { authenticators: Authenticator[] })[];
-
-  if (rows.length === 0) return null;
-
-  for (const i in rows) {
-      rows[i].authenticators = await db.select().from(authenticators).where(eq(authenticators.userId, rows[i].id));
+  if (u.length === 0) return null;
+  for (const i in u) {
+      u[i].authenticators = await db.select().from(authenticators).where(eq(authenticators.userId, u[i].id));
   }
-
-  return rows[0];
+  return u[0];
 }
 
 export default defineEventHandler(async (event) => {
@@ -53,7 +48,6 @@ export default defineEventHandler(async (event) => {
           authenticators: true
         }
       });
-  user!.authenticators = JSON.parse(user?.authenticators as unknown as string);
 
   if (!user) {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
