@@ -20,12 +20,11 @@ function getJwtSecretKey() {
 
 export async function createSessionJwt(payload: { sub: string; email: string; username: string }) {
   const key = getJwtSecretKey()
-  const token = await new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('7d')
-    .sign(key)
-  return token
+  return await new SignJWT(payload)
+      .setProtectedHeader({alg: 'HS256'})
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(key)
 }
 
 export async function verifySessionJwt(token: string) {
