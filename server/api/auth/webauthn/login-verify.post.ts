@@ -1,7 +1,7 @@
 import { verifyAuthenticationResponse } from '@simplewebauthn/server'
 import { getDb } from '~~/server/db/client'
 import {users, authenticators, type Authenticator} from '~~/server/db/schema'
-import {eq, or, sql} from 'drizzle-orm'
+import {eq, sql} from 'drizzle-orm'
 import { createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
 import { getWebAuthnConfig } from '~~/server/utils/webauthn'
 
@@ -74,13 +74,13 @@ export default defineEventHandler(async (event) => {
         with: {
           authenticators: true
         }
-      })
+      });
+  user!.authenticators = JSON.parse(user?.authenticators as unknown as string);
 
   if (!user) {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
   }
 
-  // @ts-ignore
   const authenticator = user.authenticators.find((auth: any) => auth.id === body.id)
 
   if (!authenticator) {
