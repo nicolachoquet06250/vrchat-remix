@@ -12,6 +12,8 @@ const route = useRoute()
 
 const meta = route.meta as RouteMeta;
 
+const isDev = import.meta.env.VITE_NODE_ENV === 'development'
+
 onMounted(refresh)
 
 definePageMeta({
@@ -427,7 +429,7 @@ async function onRegisterFingerprint() {
         </div>
       </section>
 
-      <section class="security-settings">
+      <section class="security-settings" v-if="isDev">
         <h2>{{ $t('profil.webauthn.title') }}</h2>
         <p class="hint">{{ $t('profil.webauthn.hint') }}</p>
 
