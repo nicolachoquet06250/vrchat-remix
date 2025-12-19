@@ -24,7 +24,7 @@ async function getUser(userId: number) {
         user: users,
         authenticator: sql`CONVERT(
           COALESCE(
-            (SELECT JSON_ARRAYAGG(
+            (SELECT CAST(JSON_ARRAYAGG(
                 JSON_OBJECT(
                   'id', ${authenticators.id},
                   'userId', ${authenticators.userId},
@@ -35,7 +35,7 @@ async function getUser(userId: number) {
                   'transports', ${authenticators.transports},
                   'createdAt', ${authenticators.createdAt}
                 )
-              )
+              ) AS CHAR)
               FROM ${authenticators}
               WHERE ${authenticators.userId} = ${users.id}),
             JSON_ARRAY()
