@@ -143,6 +143,9 @@ jobs:
             else
               echo "Warning: Node is not in PATH on the server. Ensure AlwaysData Node.js environment is enabled." >&2
             fi
+            
+            export NODE_OPTIONS="--max-old-space-size=2048"
+            
             # Install dependencies (include dev to allow running drizzle-kit migrations)
             if [ -f package.json ]; then
               npm ci --no-audit --no-fund
