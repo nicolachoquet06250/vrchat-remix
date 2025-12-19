@@ -1,7 +1,7 @@
 import { verifyAuthenticationResponse } from '@simplewebauthn/server'
 import { getDb } from '~~/server/db/client'
 import { users, authenticators } from '~~/server/db/schema'
-import { eq } from 'drizzle-orm'
+import {eq, or, sql} from 'drizzle-orm'
 import { createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
 import { getWebAuthnConfig } from '~~/server/utils/webauthn'
 
@@ -16,6 +16,42 @@ function publicKeyFromDrizzleStringToUint8Array(s: string): Uint8Array {
   return new Uint8Array(buf);
 }
 
+async function getUser(userId: number) {
+  const db = getDb();
+
+  const rows = await db
+      .select({
+        user: users,
+        authenticator: sql`CONVERT(
+          COALESCE(
+            (SELECT JSON_ARRAYAGG(
+                JSON_ARRAY(
+                  ${authenticators.id},
+                  ${authenticators.userId},
+                  ${authenticators.publicKey},
+                  ${authenticators.counter},
+                  ${authenticators.deviceType},
+                  ${authenticators.backedUp},
+                  ${authenticators.transports},
+                  ${authenticators.createdAt}
+                )
+              )
+              FROM ${authenticators}
+              WHERE ${authenticators.userId} = ${users.id}),
+            JSON_ARRAY()
+          )
+          USING utf8mb4
+        )`.as('authenticators'),
+      })
+      .from(users)
+      .leftJoin(authenticators, eq(authenticators.userId, users.id))
+      .where(eq(users.id, userId));
+
+  if (rows.length === 0) return null;
+
+  return rows[0].user;
+}
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const expectedChallenge = getCookie(event, 'webauthn_auth_challenge')
@@ -27,12 +63,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = getDb()
-  const user = await db.query.users.findFirst({
-    where: eq(users.id, Number(userId)),
-    with: {
-      authenticators: true
-    }
-  })
+  const user = process.env.DB_ENGINE === 'mariadb'
+      ? await getUser(Number(userId))
+      : await db.query.users.findFirst({
+        where: eq(users.id, Number(userId)),
+        with: {
+          authenticators: true
+        }
+      })
 
   if (!user) {
     throw createError({ statusCode: 404, statusMessage: 'User not found' })
