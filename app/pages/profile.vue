@@ -12,7 +12,7 @@ const route = useRoute()
 
 const meta = route.meta as RouteMeta;
 
-onMounted(() => refresh())
+onMounted(refresh)
 
 definePageMeta({
   name: 'profile',
