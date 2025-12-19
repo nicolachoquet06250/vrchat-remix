@@ -67,6 +67,7 @@ jobs:
           # Package files for prod install on server (for migrations or any runtime deps)
           cp package.json artifact/package.json
           if [ -f package-lock.json ]; then cp package-lock.json artifact/package-lock.json; fi
+          cd artifact && npm ci --production --no-audit --no-fund
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -143,13 +144,12 @@ jobs:
             else
               echo "Warning: Node is not in PATH on the server. Ensure AlwaysData Node.js environment is enabled." >&2
             fi
-            
-            export NODE_OPTIONS="--max-old-space-size=2048"
-            
-            # Install dependencies (include dev to allow running drizzle-kit migrations)
-            if [ -f package.json ]; then
-              npm ci --no-audit --no-fund
-            fi
+#            export NODE_OPTIONS="--max-old-space-size=2048"
+#
+#            # Install dependencies (include dev to allow running drizzle-kit migrations)
+#            if [ -f package.json ]; then
+#              npm ci --no-audit --no-fund
+#            fi
             echo "Deployed to ${{ secrets.REMOTE_PATH }}"
 
       - name: restart application
