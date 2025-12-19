@@ -1,6 +1,6 @@
 import { verifyAuthenticationResponse } from '@simplewebauthn/server'
 import { getDb } from '~~/server/db/client'
-import { users, authenticators } from '~~/server/db/schema'
+import {users, authenticators, type Authenticator} from '~~/server/db/schema'
 import {eq, or, sql} from 'drizzle-orm'
 import { createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
 import { getWebAuthnConfig } from '~~/server/utils/webauthn'
@@ -25,15 +25,15 @@ async function getUser(userId: number) {
         authenticator: sql`CONVERT(
           COALESCE(
             (SELECT JSON_ARRAYAGG(
-                JSON_ARRAY(
-                  ${authenticators.id},
-                  ${authenticators.userId},
-                  ${authenticators.publicKey},
-                  ${authenticators.counter},
-                  ${authenticators.deviceType},
-                  ${authenticators.backedUp},
-                  ${authenticators.transports},
-                  ${authenticators.createdAt}
+                JSON_OBJECT(
+                  'id', ${authenticators.id},
+                  'userId', ${authenticators.userId},
+                  'publicKey', ${authenticators.publicKey},
+                  'counter', ${authenticators.counter},
+                  'deviceType', ${authenticators.deviceType},
+                  'backedUp', ${authenticators.backedUp},
+                  'transports', ${authenticators.transports},
+                  'createdAt', ${authenticators.createdAt}
                 )
               )
               FROM ${authenticators}
@@ -49,7 +49,11 @@ async function getUser(userId: number) {
 
   if (rows.length === 0) return null;
 
-  return rows[0].user;
+  return {
+      ...rows[0].user,
+      authenticators: rows.map(r => r.authenticator)
+          .filter(a => a !== null) as Authenticator[],
+  };
 }
 
 export default defineEventHandler(async (event) => {
