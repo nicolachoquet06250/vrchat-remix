@@ -1,7 +1,7 @@
 import { getDb } from '~~/server/db/client'
 import { requireAuth } from '~~/server/utils/auth'
 import {userAvatars, users} from '~~/server/db/schema'
-import { eq, sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event)
@@ -9,24 +9,24 @@ export default defineEventHandler(async (event) => {
   const id = Number(session.sub)
   const query = db.query;
   if ('users' in query) {
-    const q = db.select({
-      id: users.id,
-      email: users.email,
-      username: users.username,
-      createdAt: users.createdAt,
-      role: users.role,
-      hasAvatar: sql`${userAvatars.id} IS NOT NULL`,
-      avatarUrl: sql`IF(hasAvatar IS NULL, '', CONCAT('/api/users/', ${userAvatars.id}, '/avatar'))`
-    })
-        .from(users)
-        .where(eq(users.id, id))
-        .toSQL();
-    console.log(q.sql, q.params, query.users.findFirst({
-      where: eq(users.id, id),
-      with: {
-        avatar: true
-      }
-    }).toSQL().sql);
+    // const q = db.select({
+    //   id: users.id,
+    //   email: users.email,
+    //   username: users.username,
+    //   createdAt: users.createdAt,
+    //   role: users.role,
+    //   hasAvatar: sql`${userAvatars.id} IS NOT NULL`,
+    //   avatarUrl: sql`IF(hasAvatar IS NULL, '', CONCAT('/api/users/', ${userAvatars.id}, '/avatar'))`
+    // })
+    //     .from(users)
+    //     .where(eq(users.id, id))
+    //     .toSQL();
+    // console.log(q.sql, q.params, query.users.findFirst({
+    //   where: eq(users.id, id),
+    //   with: {
+    //     avatar: true
+    //   }
+    // }).toSQL().sql);
 
     const user = await query.users.findFirst({
       where: eq(users.id, id)
