@@ -18,7 +18,10 @@ export function getDb() {
 
   const pool = mysql.createPool(databaseUrl)
   // @ts-ignore
-  const db = drizzle(pool, {schema, mode: 'default'})
+  const db = drizzle(pool, {
+    schema,
+    mode: process.env.DB_ENGINE === 'mariadb' ? 'planetscale' : 'default'
+  })
 
   // @ts-ignore
   cached = { pool, db }
