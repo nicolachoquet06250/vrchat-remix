@@ -114,41 +114,104 @@ jobs:
           echo "Listing downloaded artifact contents"
           ls -laR build || true
 
-      - name: Copy files to server (SCP)
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          # Copy the built artifact folder contents
-          source: build
-          target: ${{ secrets.REMOTE_PATH }}
-          # Strip both the leading 'build' and 'artifact' directories
-          strip_components: 1
-          rm: true
+#      - name: Copy files to server (SCP)
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          host: ${{ secrets.SSH_HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_KEY }}
+#          port: ${{ secrets.SSH_PORT || 22 }}
+#          # Copy the built artifact folder contents
+#          source: build
+#          target: ${{ secrets.REMOTE_PATH }}
+#          # Strip both the leading 'build' and 'artifact' directories
+#          strip_components: 1
+#          rm: true
 
-      - name: Post-deploy remote commands (install + migrate)
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            set -e
-            cd ${{ secrets.REMOTE_PATH }}
-            if command -v node >/dev/null 2>&1; then
-              echo "Node version on server: $(node -v)"
-            else
-              echo "Warning: Node is not in PATH on the server. Ensure AlwaysData Node.js environment is enabled." >&2
-            fi
-            # Install dependencies (include dev to allow running drizzle-kit migrations)
-            if [ -f package.json ]; then
-              npm i
-            fi
-            echo "Deployed to ${{ secrets.REMOTE_PATH }}"
+      - name: Install ssh tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-client sshpass
 
+      - name: Copy files to server (native scp)
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASS: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          
+          # 1) Vérifie l'accès
+          sshpass -p "$SSH_PASS" ssh \
+            -p "$SSH_PORT" \
+            -o StrictHostKeyChecking=no \
+            "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH' && echo OK"
+          
+          # 2) Optionnel: nettoyage du contenu (sans supprimer le dossier)
+          sshpass -p "$SSH_PASS" ssh \
+            -p "$SSH_PORT" \
+            -o StrictHostKeyChecking=no \
+            "$SSH_USER@$SSH_HOST" "cd '$REMOTE_PATH' && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} +"
+          
+          # 3) Copie build/* vers REMOTE_PATH (équivalent strip_components:1)
+          sshpass -p "$SSH_PASS" scp \
+            -P "$SSH_PORT" \
+            -o StrictHostKeyChecking=no \
+            -r build/* \
+            "$SSH_USER@$SSH_HOST:$REMOTE_PATH/"
+
+#      - name: Post-deploy remote commands (install + migrate)
+#        uses: appleboy/ssh-action@v1.2.0
+#        with:
+#          host: ${{ secrets.SSH_HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_KEY }}
+#          port: ${{ secrets.SSH_PORT || 22 }}
+#          script: |
+#            set -e
+#            cd ${{ secrets.REMOTE_PATH }}
+#            if command -v node >/dev/null 2>&1; then
+#              echo "Node version on server: $(node -v)"
+#            else
+#              echo "Warning: Node is not in PATH on the server. Ensure AlwaysData Node.js environment is enabled." >&2
+#            fi
+#            # Install dependencies (include dev to allow running drizzle-kit migrations)
+#            if [ -f package.json ]; then
+#              npm i
+#            fi
+#            echo "Deployed to ${{ secrets.REMOTE_PATH }}"
+
+      - name: Post-deploy remote commands (install + migrate) - native ssh
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASS: ${{ secrets.SSH_KEY }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+        run: |
+          set -euo pipefail
+          
+          sshpass -p "$SSH_PASS" ssh \
+            -p "$SSH_PORT" \
+            -o StrictHostKeyChecking=no \
+            "$SSH_USER@$SSH_HOST" <<'EOF'
+          set -e
+          cd "$REMOTE_PATH"
+          
+          if command -v node >/dev/null 2>&1; then
+            echo "Node version on server: $(node -v)"
+          else
+            echo "Warning: Node is not in PATH on the server. Ensure AlwaysData Node.js environment is enabled." >&2
+          fi
+          
+          # Install dependencies (include dev to allow running drizzle-kit migrations)
+          if [ -f package.json ]; then
+            npm i
+          fi
+          
+          echo "Deployed to $REMOTE_PATH"
 
       - name: restart application
         run: |
