@@ -150,10 +150,11 @@ jobs:
             "$SSH_USER@$SSH_HOST" "mkdir -p '$REMOTE_PATH' && echo OK"
           
           # 2) Optionnel: nettoyage du contenu (sans supprimer le dossier)
-          sshpass -p "$SSH_PASS" ssh \
-            -p "$SSH_PORT" \
-            -o StrictHostKeyChecking=no \
-            "$SSH_USER@$SSH_HOST" "cd '$REMOTE_PATH' && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} +"
+          sshpass -p "$SSH_PASS" ssh -p "$SSH_PORT" -o StrictHostKeyChecking=no \
+            "$SSH_USER@$SSH_HOST" "cd '$REMOTE_PATH' && find . -mindepth 1 -maxdepth 1 \
+              ! -name '.env' \
+              ! -name 'node_modules' \
+              -exec rm -rf {} +"
           
           # 3) Copie build/* vers REMOTE_PATH (équivalent strip_components:1)
           sshpass -p "$SSH_PASS" scp \
