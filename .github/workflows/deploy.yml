@@ -145,7 +145,7 @@ jobs:
             fi
             # Install dependencies (include dev to allow running drizzle-kit migrations)
             if [ -f package.json ]; then
-              npm i
+              npm ci --no-audit --no-fund
             fi
             echo "Deployed to ${{ secrets.REMOTE_PATH }}"
 
