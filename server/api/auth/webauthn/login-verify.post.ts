@@ -1,6 +1,6 @@
 import { verifyAuthenticationResponse } from '@simplewebauthn/server'
 import { getDb } from '~~/server/db/client'
-import {users, authenticators, type Authenticator} from '~~/server/db/schema'
+import {users, authenticators, type Authenticator, type User} from '~~/server/db/schema'
 import {eq, sql} from 'drizzle-orm'
 import { createSessionJwt, setSessionCookie } from '~~/server/utils/auth'
 import { getWebAuthnConfig } from '~~/server/utils/webauthn'
@@ -20,40 +20,18 @@ async function getUser(userId: number) {
   const db = getDb();
 
   const rows = await db
-      .select({
-        user: users,
-        authenticator: sql`CONVERT(
-          COALESCE(
-            (SELECT CAST(JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id', ${authenticators.id},
-                  'userId', ${authenticators.userId},
-                  'publicKey', ${authenticators.publicKey},
-                  'counter', ${authenticators.counter},
-                  'deviceType', ${authenticators.deviceType},
-                  'backedUp', ${authenticators.backedUp},
-                  'transports', ${authenticators.transports},
-                  'createdAt', ${authenticators.createdAt}
-                )
-              ) AS CHAR)
-              FROM ${authenticators}
-              WHERE ${authenticators.userId} = ${users.id}),
-            JSON_ARRAY()
-          )
-          USING utf8mb4
-        )`.as('authenticators'),
-      })
+      .select()
       .from(users)
       .leftJoin(authenticators, eq(authenticators.userId, users.id))
-      .where(eq(users.id, userId));
+      .where(eq(users.id, userId)) as unknown as (User & { authenticators: Authenticator[] })[];
 
   if (rows.length === 0) return null;
 
-  return {
-      ...rows[0].user,
-      authenticators: rows.map(r => r.authenticator)
-          .filter(a => a !== null) as Authenticator[],
-  };
+  for (const i in rows) {
+      rows[i].authenticators = await db.select().from(authenticators).where(eq(authenticators.userId, rows[i].id));
+  }
+
+  return rows[0];
 }
 
 export default defineEventHandler(async (event) => {
