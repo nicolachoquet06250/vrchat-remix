@@ -1,6 +1,6 @@
-import { eq, sql } from 'drizzle-orm'
+import {and, eq, sql} from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
-import { downloads } from '~~/server/db/schema'
+import {downloads, projects} from '~~/server/db/schema'
 import { getSession } from '~~/server/utils/auth'
 import { z } from 'zod'
 
@@ -11,6 +11,7 @@ const QuerySchema = z.object({
 export default defineEventHandler(async (event) => {
   const session = await getSession(event)
   if (!session) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+  const userId = Number(session?.sub);
 
   const query = getQuery(event)
   const parsed = QuerySchema.safeParse(query)
@@ -32,7 +33,14 @@ export default defineEventHandler(async (event) => {
     year: sql<number>`YEAR(${downloads.createdAt})`,
     count: sql<number>`COUNT(*)`,
   }).from(downloads)
-    .where(projectId ? eq(downloads.projectId, projectId) : undefined as any)
+    .where(
+        projectId
+            ? and(
+                eq(downloads.projectId, projectId),
+                eq(sql`(SELECT ${projects.userId} FROM ${projects} WHERE ${projects.id} = ${downloads.projectId} LIMIT 1)`, userId)
+            )
+            : eq(sql`(SELECT ${projects.userId} FROM ${projects} WHERE ${projects.id} = ${downloads.projectId} LIMIT 1)`, userId)
+    )
     .groupBy(sql`YEAR(${downloads.createdAt})`)
     .orderBy(sql`YEAR(${downloads.createdAt}) DESC`)
 
