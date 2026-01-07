@@ -118,26 +118,38 @@ const chartData = computed(() => ({
   ]
 }))
 
-const options = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    x: {
-      grid: { display: false },
-      stacked: false,
+const options = computed(() => {
+  const isDark = import.meta.client && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const textColor = isDark ? '#ccc' : '#666'
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: { display: false },
+        stacked: false,
+        ticks: { color: textColor }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { precision: 0, color: textColor },
+        stacked: false,
+        grid: { color: gridColor }
+      }
     },
-    y: {
-      beginAtZero: true,
-      ticks: { precision: 0 },
-      stacked: false,
+    plugins: {
+      legend: { 
+        display: true, 
+        position: 'top' as const,
+        labels: { color: textColor }
+      },
+      title: { display: false },
+      tooltip: { enabled: true }
     }
-  },
-  plugins: {
-    legend: { display: true, position: 'top' as const },
-    title: { display: false },
-    tooltip: { enabled: true }
   }
-}))
+})
 </script>
 
 <template>
@@ -176,17 +188,18 @@ const options = computed(() => ({
 <style scoped>
 .analytics { display: grid; gap: 16px; }
 .layout { display: grid; grid-template-columns: 140px 1fr; gap: 16px; }
-.years { border: 1px solid #eee; border-radius: 8px; padding: 12px; height: fit-content; }
-.years-title { font-weight: 600; margin-bottom: 8px; }
-.year-btn { display:block; width:100%; text-align:left; padding:8px 10px; margin:6px 0; border-radius:6px; border:1px solid #eee; background:#fafafa; cursor:pointer; }
-.year-btn.active { background:#111; color:#fff; border-color:#111; }
-.chart-card { border: 1px solid #eee; border-radius: 8px; padding: 12px; overflow-x:auto; }
-.legend { font-size: 14px; margin-bottom: 8px; display:flex; align-items:center; }
+.years { border: 1px solid light-dark(#eee, #2a3441); border-radius: 8px; padding: 12px; height: fit-content; background: light-dark(#fff, #111a24); }
+.years-title { font-weight: 600; margin-bottom: 8px; color: light-dark(#111, #fff); }
+.year-btn { display:block; width:100%; text-align:left; padding:8px 10px; margin:6px 0; border-radius:6px; border:1px solid light-dark(#eee, #2a3441); background: light-dark(#fafafa, #1c2632); color: light-dark(#333, #ccc); cursor:pointer; }
+.year-btn:hover { background: light-dark(#f0f0f0, #252f3d); }
+.year-btn.active { background: light-dark(#111, #52c5d0); color: light-dark(#fff, #000); border-color: light-dark(#111, #52c5d0); }
+.chart-card { border: 1px solid light-dark(#eee, #2a3441); border-radius: 8px; padding: 12px; overflow-x:auto; background: light-dark(#fff, #111a24); }
+.legend { font-size: 14px; margin-bottom: 8px; display:flex; align-items:center; color: light-dark(#000, #fff); }
 .legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; }
 .chart { display:block; }
-.labels { display:grid; grid-auto-flow:column; gap:20px; margin-top:6px; font-size:12px; color:#666; }
+.labels { display:grid; grid-auto-flow:column; gap:20px; margin-top:6px; font-size:12px; color: light-dark(#666, #aaa); }
 .label { min-width:30px; text-align:center; }
-.error { color: #b91c1c }
+.error { color: #ef4444 }
 @media (max-width: 720px) {
   .layout { grid-template-columns: 1fr; }
 }

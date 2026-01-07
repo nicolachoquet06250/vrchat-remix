@@ -249,6 +249,10 @@
       "errors": {
         "forbidden": "Access denied. This page is restricted to the creator."
       }
+    },
+    "analytics": {
+      "title": "Global Analytics",
+      "description": "Download statistics for all projects by year and month"
     }
   },
   "analytics": {

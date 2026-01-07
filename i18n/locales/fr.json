@@ -249,6 +249,10 @@
       "errors": {
         "forbidden": "Accès refusé. Cette page est réservée au creator."
       }
+    },
+    "analytics": {
+      "title": "Analytics globales",
+      "description": "Statistiques de téléchargement de tous les projets par an et par mois"
     }
   },
   "analytics": {

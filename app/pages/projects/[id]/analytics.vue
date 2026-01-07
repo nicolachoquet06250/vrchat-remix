@@ -183,8 +183,9 @@ const options = computed(() => ({
 .layout { display: grid; grid-template-columns: 140px 1fr; gap: 16px; }
 .years { border: 1px solid #eee; border-radius: 8px; padding: 12px; height: fit-content; }
 .years-title { font-weight: 600; margin-bottom: 8px; }
-.year-btn { display:block; width:100%; text-align:left; padding:8px 10px; margin:6px 0; border-radius:6px; border:1px solid #eee; background:#fafafa; cursor:pointer; }
-.year-btn.active { background:#111; color:#fff; border-color:#111; }
+.year-btn { display:block; width:100%; text-align:left; padding:8px 10px; margin:6px 0; border-radius:6px; border:1px solid light-dark(#eee, #2a3441); background: light-dark(#fafafa, #1c2632); color: light-dark(#333, #ccc); cursor:pointer; }
+.year-btn:hover { background: light-dark(#f0f0f0, #252f3d); }
+.year-btn.active { background: light-dark(#111, #52c5d0); color: light-dark(#fff, #000); border-color: light-dark(#111, #52c5d0); }
 .chart-card { border: 1px solid #eee; border-radius: 8px; padding: 12px; overflow-x:auto; }
 .legend { font-size: 14px; margin-bottom: 8px; display:flex; align-items:center; }
 .legend .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; }
