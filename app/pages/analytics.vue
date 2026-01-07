@@ -51,9 +51,6 @@ async function loadYears() {
   try {
     const res = await $fetch<{ years: number[] }>(`/api/analytics/downloads/years`)
     years.value = res.years
-    if (res.years.length > 0 && !res.years.includes(selectedYear.value)) {
-      selectedYear.value = res.years[0]!
-    }
   } catch (e: any) {
     error.value = e?.statusMessage || 'Failed to load years'
   }

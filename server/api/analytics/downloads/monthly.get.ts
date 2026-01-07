@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { and, eq, sql } from 'drizzle-orm'
 import { getDb } from '~~/server/db/client'
-import { downloads } from '~~/server/db/schema'
+import { downloads, projects } from '~~/server/db/schema'
 import { getSession } from '~~/server/utils/auth'
 
 const QuerySchema = z.object({
@@ -13,6 +13,8 @@ export default defineEventHandler(async (event) => {
   // restreindre aux utilisateurs connectés (peut évoluer vers admin si besoin)
   const session = await getSession(event)
   if (!session) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
+
+  const userId = Number(session?.sub);
 
   const query = getQuery(event)
   const parsed = QuerySchema.safeParse(query)
@@ -42,10 +44,14 @@ export default defineEventHandler(async (event) => {
   }).from(downloads)
     .where(projectId
       ? and(
-          sql`YEAR(${downloads.createdAt}) = ${year}`,
-          eq(downloads.projectId, projectId)
+          eq(sql`YEAR(${downloads.createdAt})`, year),
+          eq(downloads.projectId, projectId),
+          eq(sql`(SELECT ${projects.userId} FROM ${projects} WHERE ${projects.id} = ${downloads.projectId} LIMIT 1)`, userId)
         )
-      : sql`YEAR(${downloads.createdAt}) = ${year}`
+      : and(
+          eq(sql`YEAR(${downloads.createdAt})`, year),
+          eq(sql`(SELECT ${projects.userId} FROM ${projects} WHERE ${projects.id} = ${downloads.projectId} LIMIT 1)`, userId)
+        )
     )
     .groupBy(sql`MONTH(${downloads.createdAt})`, downloads.isAuthenticated)
     .orderBy(sql`MONTH(${downloads.createdAt})`)
@@ -65,7 +71,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Limiter à janvier → mois courant si année en cours
-  const endMonth = year === now.getFullYear() ? now.getMonth() + 1 : 12
+  const endMonth = /*year === now.getFullYear() ? now.getMonth() + 1 :*/ 12
 
   return {
     year,
